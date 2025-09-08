@@ -1,0 +1,24 @@
+targets:
+  $default:
+    builders:
+      riverpod_generator:
+        options:
+          # 코드 생성 옵션
+          generate_provider_extension: true
+          generate_provider_dependencies: true
+          generate_async_notifier_provider: true
+          generate_family_async_notifier_provider: true
+          generate_stream_notifier_provider: true
+          generate_family_stream_notifier_provider: true
+          generate_notifier_provider: true
+          generate_family_notifier_provider: true
+          generate_provider: true
+          generate_family_provider: true
+          generate_future_provider: true
+          generate_family_future_provider: true
+          generate_stream_provider: true
+          generate_family_stream_provider: true
+          generate_state_notifier_provider: true
+          generate_family_state_notifier_provider: true
+          generate_change_notifier_provider: true
+          generate_family_change_notifier_provider: true
