@@ -1,0 +1,187 @@
+# Mobi Party Link - Flutter Riverpod + Clean Architecture 프로젝트
+
+## 프로젝트 개요
+- **프레임워크**: Flutter 3.0+
+- **상태 관리**: Riverpod (flutter_riverpod)
+- **아키텍처**: Clean Architecture + Repository Pattern
+- **DI**: Riverpod Code Generation
+- **네트워킹**: Dio + Retrofit
+- **로컬 저장소**: SharedPreferences + Hive
+- **코드 생성**: Freezed, JSON Annotation, Riverpod Generator
+- **테스트**: Unit, Widget, Integration Tests
+- **배포**: Android + iOS
+
+## 코딩 규칙
+
+### 1. 아키텍처 규칙
+- **Clean Architecture** 패턴을 엄격히 준수
+- **의존성 역전 원칙** 적용 (Domain → Data)
+- **단일 책임 원칙** 준수
+- **인터페이스 분리 원칙** 적용
+
+### 2. 폴더 구조 규칙
+```
+lib/
+├── core/                    # 핵심 기능
+│   ├── di/                 # 의존성 주입
+│   ├── error/              # 에러 처리
+│   ├── network/            # 네트워크
+│   ├── constants/          # 상수
+│   ├── router/             # 라우팅
+│   ├── theme/              # 테마
+│   └── utils/              # 유틸리티
+├── features/               # 기능별 모듈
+│   └── feature_name/
+│       ├── data/           # 데이터 계층
+│       │   ├── datasources/    # 데이터 소스
+│       │   ├── models/         # 데이터 모델
+│       │   └── repositories/   # Repository 구현체
+│       ├── domain/         # 도메인 계층
+│       │   ├── entities/       # 엔티티
+│       │   ├── repositories/   # Repository 인터페이스
+│       │   └── usecases/      # UseCase
+│       └── presentation/   # 프레젠테이션 계층
+│           ├── providers/      # Riverpod Provider
+│           ├── pages/          # 화면
+│           └── widgets/        # UI 위젯
+└── shared/                 # 공유 컴포넌트
+```
+
+### 3. 네이밍 규칙
+- **파일명**: snake_case (예: counter_screen.dart)
+- **클래스명**: PascalCase (예: CounterScreen)
+- **변수/함수명**: camelCase (예: counterValue)
+- **상수**: UPPER_SNAKE_CASE (예: API_BASE_URL)
+- **Private 멤버**: _camelCase (예: _counterNotifier)
+
+### 4. Riverpod 규칙
+- **Provider**: `@riverpod` 어노테이션 사용
+- **StateNotifier**: 복잡한 상태 관리용
+- **NotifierProvider**: 간단한 상태 관리용
+- **FutureProvider**: 비동기 데이터용
+- **StreamProvider**: 스트림 데이터용
+- **Provider 파일**: `*_provider.dart` 명명
+
+### 5. 에러 처리 규칙
+- **Either<Failure, Success>** 패턴 사용
+- **Exception → Failure** 변환
+- **Result 패턴** 적용
+- **에러 메시지**: 한국어로 사용자 친화적
+
+### 6. 코드 생성 규칙
+- **Freezed**: 모든 Entity, Model에 적용
+- **JSON Annotation**: API 응답 모델에 적용
+- **Riverpod Generator**: 모든 Provider에 적용
+- **build_runner**: 코드 생성 후 커밋
+
+### 7. 테스트 규칙
+- **Unit Test**: UseCase, Repository 테스트
+- **Widget Test**: UI 컴포넌트 테스트
+- **Integration Test**: 전체 플로우 테스트
+- **Mock**: Mockito 사용
+- **테스트 파일**: `*_test.dart` 명명
+
+### 8. UI/UX 규칙
+- **Material 3** 디자인 시스템 사용
+- **반응형 디자인** 적용
+- **다크/라이트 테마** 지원
+- **접근성** 고려
+- **한국어** UI 텍스트
+
+### 9. 성능 규칙
+- **const 생성자** 최대한 사용
+- **불필요한 rebuild** 방지
+- **메모리 누수** 방지
+- **이미지 최적화** 적용
+
+### 10. 보안 규칙
+- **API 키**: 환경변수 사용
+- **민감한 데이터**: 암호화 저장
+- **네트워크**: HTTPS만 사용
+- **인증**: 안전한 토큰 관리
+
+## 코드 예시
+
+### Provider 생성
+```dart
+@riverpod
+class CounterNotifier extends _$CounterNotifier {
+  @override
+  CounterState build() => const CounterState();
+  
+  Future<void> increment() async {
+    // 비즈니스 로직
+  }
+}
+```
+
+### UseCase 구현
+```dart
+class GetCounter {
+  final CounterRepository repository;
+  
+  GetCounter(this.repository);
+  
+  Future<Either<Failure, CounterEntity>> call() async {
+    return await repository.getCounter();
+  }
+}
+```
+
+### Entity 정의
+```dart
+@freezed
+class CounterEntity with _$CounterEntity {
+  const factory CounterEntity({
+    required int value,
+    required DateTime lastUpdated,
+  }) = _CounterEntity;
+}
+```
+
+### Repository 구현
+```dart
+class CounterRepositoryImpl implements CounterRepository {
+  final CounterLocalDataSource localDataSource;
+  final CounterRemoteDataSource remoteDataSource;
+  final NetworkInfo networkInfo;
+  
+  // 구현...
+}
+```
+
+## 금지사항
+- ❌ BLoC 패턴 사용 (Riverpod 사용)
+- ❌ Provider 패키지 직접 사용 (Riverpod 사용)
+- ❌ setState 사용 (Riverpod 사용)
+- ❌ 전역 변수 사용
+- ❌ 하드코딩된 값 (상수 사용)
+- ❌ try-catch 직접 사용 (Either 패턴 사용)
+- ❌ print 사용 (Logger 사용)
+- ❌ 비동기 함수에서 동기 함수 호출
+
+## 필수사항
+- ✅ 모든 Entity는 Freezed 사용
+- ✅ 모든 Provider는 @riverpod 사용
+- ✅ 모든 UseCase는 Either 반환
+- ✅ 모든 Repository는 인터페이스 구현
+- ✅ 모든 에러는 Failure로 변환
+- ✅ 모든 테스트는 Mock 사용
+- ✅ 모든 UI는 Material 3 사용
+- ✅ 모든 텍스트는 한국어 사용
+
+## 배포 설정
+- **Android**: API 21+ (Android 5.0+)
+- **iOS**: iOS 12.0+
+- **앱 아이콘**: 1024x1024 PNG
+- **스플래시 스크린**: Material 3 디자인
+- **버전 관리**: semantic versioning
+
+## 개발 워크플로우
+1. 기능 브랜치 생성
+2. Clean Architecture 구조 준수
+3. 테스트 코드 작성
+4. 코드 생성 실행
+5. PR 생성 및 리뷰
+6. main 브랜치 머지
+7. 배포 준비
