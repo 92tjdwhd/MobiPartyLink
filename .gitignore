@@ -94,6 +94,10 @@ lib/generated_plugin_registrant.dart
 .env.test
 .env.production
 
+# Android
+android/local.properties
+android/key.properties
+
 # Firebase
 **/ios/firebase_app_id_file.json
 **/ios/GoogleService-Info.plist

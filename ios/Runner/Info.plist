@@ -6,6 +6,8 @@
 	<string>ko</string>
 	<key>CFBundleDisplayName</key>
 	<string>Mobi Party Link</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>15.0</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
