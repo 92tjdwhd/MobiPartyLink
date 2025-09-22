@@ -6,6 +6,7 @@ Flutter Riverpod + Clean Architecture를 사용한 실제 회사 표준 모바�
 
 이 프로젝트는 **Clean Architecture + Riverpod + Repository Pattern**을 기반으로 구성되어 있으며, 실제 회사에서 사용하는 표준 구조입니다.
 
+
 ## 📁 Flutter 프로젝트 전체 구조
 
 ### 루트 디렉토리
@@ -25,6 +26,8 @@ mobi_party_link/
 ├── lib/                    # Flutter 소스 코드 (메인)
 ├── test/                   # 테스트 코드
 ├── docs/                   # 프로젝트 문서
+│   ├── policies/           # 앱 정책 문서
+│   │   └── app-policy.md   # 개발 설계 정책서
 ├── pubspec.yaml           # Flutter 의존성 설정
 ├── analysis_options.yaml  # 코드 분석 설정
 ├── .gitignore             # Git 무시 파일
@@ -242,6 +245,14 @@ flutter packages pub run build_runner build
 # 코드 생성 (파일 감시)
 flutter packages pub run build_runner watch
 ```
+
+## 📋 프로젝트 문서
+
+- [개발 설계 정책서](docs/policies/app-policy.md) - 앱 개발 정책 및 설계 가이드라인
+- [기능 명세서](docs/features.md) - 앱 기능 상세 명세
+- [프로젝트 개요](docs/project-brief.md) - 프로젝트 전체 개요
+- [와이어프레임](docs/wireframes.md) - UI/UX 와이어프레임
+- [개발 로그](docs/development-log.md) - 개발 진행 상황
 
 ## 📄 라이선스
 
