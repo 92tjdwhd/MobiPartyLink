@@ -21,7 +21,14 @@ class PartyUtils {
         return '진행중';
       case PartyStatus.ended:
         return '종료됨';
+      case PartyStatus.cancelled:
+        return '취소';
     }
+  }
+
+  /// 파티 상태를 한국어로 변환 (간단 버전)
+  static String getStatusText(PartyStatus status) {
+    return getPartyStatusText(status);
   }
 
   /// 콘텐츠 타입을 한국어로 변환

@@ -32,7 +32,9 @@ class JobModel with _$JobModel {
       updatedAt: entity.updatedAt,
     );
   }
+}
 
+extension JobModelX on JobModel {
   JobEntity toEntity() {
     return JobEntity(
       id: id,

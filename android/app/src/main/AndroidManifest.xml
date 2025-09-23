@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
     <application
-        android:label="Mobi Party Link"
+        android:label="모비링크"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

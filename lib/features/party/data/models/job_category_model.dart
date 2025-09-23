@@ -28,7 +28,9 @@ class JobCategoryModel with _$JobCategoryModel {
       updatedAt: entity.updatedAt,
     );
   }
+}
 
+extension JobCategoryModelX on JobCategoryModel {
   JobCategoryEntity toEntity() {
     return JobCategoryEntity(
       id: id,

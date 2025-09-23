@@ -35,4 +35,5 @@ enum PartyStatus {
   pending,
   ongoing,
   ended,
+  cancelled,
 }

@@ -82,9 +82,9 @@ class JobRemoteDataSourceImpl implements JobRemoteDataSource {
       return JobModel.fromJson(response).toEntity();
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
-        throw ServerException(message: '직업을 찾을 수 없습니다', code: e.code);
+        throw ServerException(message: '직업을 찾을 수 없습니다');
       }
-      throw ServerException(message: e.message, code: e.code);
+      throw ServerException(message: e.message);
     } catch (e) {
       throw ServerException(message: '직업 정보를 가져오는데 실패했습니다: $e');
     }

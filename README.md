@@ -1,6 +1,6 @@
-# Mobi Party Link
+# 모비링크 - 모바일 마비노기 파티 모집 앱
 
-Flutter Riverpod + Clean Architecture를 사용한 실제 회사 표준 모바일 애플리케이션입니다.
+Flutter Riverpod + Clean Architecture를 사용한 마비노기 파티 모집 모바일 애플리케이션입니다.
 
 ## 🏗️ 아키텍처
 

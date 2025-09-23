@@ -91,9 +91,7 @@ class PartyRemoteDataSourceImpl implements PartyRemoteDataSource {
       }
 
       // 정렬
-      queryBuilder = queryBuilder.order('created_at', ascending: false);
-
-      final response = await queryBuilder;
+      final response = await queryBuilder.order('created_at', ascending: false);
       return (response as List)
           .map((json) => PartyModel.fromJson(json).toEntity())
           .toList();

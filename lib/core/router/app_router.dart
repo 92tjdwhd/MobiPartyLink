@@ -3,18 +3,25 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/counter/presentation/screens/counter_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/home/presentation/screens/main_screen.dart';
 
 class AppRouter {
   static const String home = '/';
+  static const String main = '/main';
   static const String counter = '/counter';
 
   static final GoRouter router = GoRouter(
-    initialLocation: home,
+    initialLocation: main,
     routes: [
       GoRoute(
         path: home,
         name: 'home',
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: main,
+        name: 'main',
+        builder: (context, state) => const MainScreen(),
       ),
       GoRoute(
         path: counter,
