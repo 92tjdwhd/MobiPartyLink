@@ -9,7 +9,7 @@ part 'counter_model.g.dart';
 class CounterModel with _$CounterModel {
   const factory CounterModel({
     required int value,
-    required DateTime lastUpdated,
+    DateTime? lastUpdated,
   }) = _CounterModel;
 
   factory CounterModel.fromJson(Map<String, dynamic> json) =>

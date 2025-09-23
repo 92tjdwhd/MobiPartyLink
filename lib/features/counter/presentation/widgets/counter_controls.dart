@@ -10,25 +10,27 @@ class CounterControls extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final counterState = ref.watch(counterNotifierProvider);
     final counterNotifier = ref.read(counterNotifierProvider.notifier);
-    
+
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             FloatingActionButton(
-              onPressed: counterState.isLoading ? null : () => counterNotifier.decrement(),
+              onPressed:
+                  counterState.isLoading ? null : counterNotifier.decrement,
               heroTag: 'decrement',
               child: const Icon(Icons.remove),
             ),
             FloatingActionButton(
-              onPressed: counterState.isLoading ? null : () => counterNotifier.reset(),
+              onPressed: counterState.isLoading ? null : counterNotifier.reset,
               heroTag: 'reset',
               backgroundColor: Theme.of(context).colorScheme.secondary,
               child: const Icon(Icons.refresh),
             ),
             FloatingActionButton(
-              onPressed: counterState.isLoading ? null : () => counterNotifier.increment(),
+              onPressed:
+                  counterState.isLoading ? null : counterNotifier.increment,
               heroTag: 'increment',
               child: const Icon(Icons.add),
             ),
@@ -39,14 +41,17 @@ class CounterControls extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton.icon(
-              onPressed: counterState.isLoading ? null : () => _showSetCountDialog(context, ref),
+              onPressed: counterState.isLoading
+                  ? null
+                  : () => _showSetCountDialog(context, ref),
               icon: const Icon(Icons.edit),
               label: const Text('값 설정'),
             ),
             ElevatedButton.icon(
-              onPressed: counterState.isLoading || counterState.counter.value <= 0
-                  ? null
-                  : () => counterNotifier.reset(),
+              onPressed:
+                  counterState.isLoading || counterState.counter.value <= 0
+                      ? null
+                      : counterNotifier.reset,
               icon: const Icon(Icons.clear),
               label: const Text('초기화'),
             ),
@@ -59,7 +64,7 @@ class CounterControls extends ConsumerWidget {
   void _showSetCountDialog(BuildContext context, WidgetRef ref) {
     final TextEditingController controller = TextEditingController();
     final counterNotifier = ref.read(counterNotifierProvider.notifier);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

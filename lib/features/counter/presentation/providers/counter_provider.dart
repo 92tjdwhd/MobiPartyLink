@@ -21,11 +21,6 @@ class CounterState with _$CounterState {
 }
 
 class CounterNotifier extends StateNotifier<CounterState> {
-  final GetCounter getCounter;
-  final IncrementCounter incrementCounter;
-  final DecrementCounter decrementCounter;
-  final ResetCounter resetCounter;
-
   CounterNotifier({
     required this.getCounter,
     required this.incrementCounter,
@@ -34,10 +29,14 @@ class CounterNotifier extends StateNotifier<CounterState> {
   }) : super(const CounterState()) {
     _loadCounter();
   }
+  final GetCounter getCounter;
+  final IncrementCounter incrementCounter;
+  final DecrementCounter decrementCounter;
+  final ResetCounter resetCounter;
 
   Future<void> _loadCounter() async {
     state = state.copyWith(isLoading: true, isError: false);
-    
+
     final result = await getCounter();
     result.fold(
       (failure) => state = state.copyWith(
@@ -55,7 +54,7 @@ class CounterNotifier extends StateNotifier<CounterState> {
 
   Future<void> increment() async {
     state = state.copyWith(isLoading: true, isError: false);
-    
+
     final result = await incrementCounter();
     result.fold(
       (failure) => state = state.copyWith(
@@ -73,7 +72,7 @@ class CounterNotifier extends StateNotifier<CounterState> {
 
   Future<void> decrement() async {
     state = state.copyWith(isLoading: true, isError: false);
-    
+
     final result = await decrementCounter();
     result.fold(
       (failure) => state = state.copyWith(
@@ -91,7 +90,7 @@ class CounterNotifier extends StateNotifier<CounterState> {
 
   Future<void> reset() async {
     state = state.copyWith(isLoading: true, isError: false);
-    
+
     final result = await resetCounter();
     result.fold(
       (failure) => state = state.copyWith(

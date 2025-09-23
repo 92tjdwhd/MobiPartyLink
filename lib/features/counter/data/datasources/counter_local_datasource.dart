@@ -8,15 +8,16 @@ abstract class CounterLocalDataSource {
 }
 
 class CounterLocalDataSourceImpl implements CounterLocalDataSource {
-  final SharedPreferences sharedPreferences;
-
   CounterLocalDataSourceImpl({required this.sharedPreferences});
+  final SharedPreferences sharedPreferences;
 
   @override
   Future<CounterModel> getCounter() async {
     final value = sharedPreferences.getInt('counter_value') ?? 0;
-    final lastUpdatedMillis = sharedPreferences.getInt('counter_last_updated') ?? DateTime.now().millisecondsSinceEpoch;
-    
+    final lastUpdatedMillis =
+        sharedPreferences.getInt('counter_last_updated') ??
+            DateTime.now().millisecondsSinceEpoch;
+
     return CounterModel(
       value: value,
       lastUpdated: DateTime.fromMillisecondsSinceEpoch(lastUpdatedMillis),
@@ -26,7 +27,10 @@ class CounterLocalDataSourceImpl implements CounterLocalDataSource {
   @override
   Future<CounterModel> saveCounter(CounterModel counter) async {
     await sharedPreferences.setInt('counter_value', counter.value);
-    await sharedPreferences.setInt('counter_last_updated', counter.lastUpdated.millisecondsSinceEpoch);
+    if (counter.lastUpdated != null) {
+      await sharedPreferences.setInt(
+          'counter_last_updated', counter.lastUpdated!.millisecondsSinceEpoch);
+    }
     return counter;
   }
 }

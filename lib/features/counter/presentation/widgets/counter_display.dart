@@ -9,7 +9,7 @@ class CounterDisplay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final counterState = ref.watch(counterNotifierProvider);
-    
+
     return Column(
       children: [
         Container(
@@ -31,9 +31,9 @@ class CounterDisplay extends ConsumerWidget {
                 : Text(
                     '${counterState.counter.value}',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                   ),
           ),
         ),
@@ -47,8 +47,8 @@ class CounterDisplay extends ConsumerWidget {
           Text(
             counterState.errorMessage ?? '오류가 발생했습니다',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
+                  color: Theme.of(context).colorScheme.error,
+                ),
           ),
         ],
       ],
