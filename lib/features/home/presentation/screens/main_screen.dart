@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/core/theme/app_theme.dart';
+import 'package:mobi_party_link/features/party/presentation/widgets/party_recruitment_bottom_sheet.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -241,7 +242,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
       margin: const EdgeInsets.all(20),
       child: ElevatedButton.icon(
         onPressed: () {
-          // TODO: 파티 생성 화면으로 이동
+          _showPartyRecruitmentBottomSheet();
         },
         icon: const Icon(
           Icons.add_rounded,
@@ -457,6 +458,15 @@ class _MainScreenState extends ConsumerState<MainScreen>
           letterSpacing: -0.1,
         ),
       ),
+    );
+  }
+
+  void _showPartyRecruitmentBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const PartyRecruitmentBottomSheet(),
     );
   }
 }
