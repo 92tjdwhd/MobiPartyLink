@@ -32,9 +32,9 @@ class PartyTemplateServerDataSourceImpl
       return TemplateVersionModel.fromJson(response).toEntity();
     } catch (e) {
       // 버전 테이블이 없으면 기본값 반환
-      return const TemplateVersionEntity(
+      return TemplateVersionEntity(
         version: 1,
-        lastUpdated: null,
+        lastUpdated: DateTime.now(),
         templateCount: 4,
       );
     }

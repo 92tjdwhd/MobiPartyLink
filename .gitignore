@@ -104,7 +104,6 @@ android/key.properties
 **/android/app/google-services.json
 
 # Code generation
-*.g.dart
 *.freezed.dart
 *.config.dart
 *.mocks.dart
@@ -119,9 +118,3 @@ android/key.properties
 .fvm/
 
 # Generated files
-lib/core/di/injection.g.dart
-lib/features/counter/data/models/counter_model.freezed.dart
-lib/features/counter/data/models/counter_model.g.dart
-lib/features/counter/domain/entities/counter_entity.freezed.dart
-lib/features/counter/domain/entities/counter_entity.g.dart
-lib/features/counter/presentation/providers/counter_provider.freezed.dart
