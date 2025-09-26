@@ -28,6 +28,8 @@ import '../../features/party/domain/usecases/leave_party.dart';
 import '../../features/party/domain/usecases/delete_party.dart';
 import '../../features/party/domain/usecases/update_party.dart';
 import '../../features/party/domain/usecases/search_parties.dart';
+import '../../features/party/domain/usecases/get_my_parties.dart';
+import '../../features/party/domain/usecases/get_joined_parties.dart';
 import '../../features/party/data/datasources/job_remote_datasource.dart';
 import '../../features/party/data/repositories/job_repository_impl.dart';
 import '../../features/party/domain/repositories/job_repository.dart';
@@ -279,4 +281,15 @@ GetJobsGroupedByCategory getJobsGroupedByCategoryProvider(
     GetJobsGroupedByCategoryProviderRef ref) {
   return GetJobsGroupedByCategory(
       jobRepository: ref.watch(jobRepositoryProvider));
+}
+
+// Party List Use Cases
+@riverpod
+GetMyParties getMyPartiesProvider(GetMyPartiesProviderRef ref) {
+  return GetMyParties(ref.watch(partyRepositoryProvider));
+}
+
+@riverpod
+GetJoinedParties getJoinedPartiesProvider(GetJoinedPartiesProviderRef ref) {
+  return GetJoinedParties(ref.watch(partyRepositoryProvider));
 }

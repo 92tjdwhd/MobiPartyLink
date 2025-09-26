@@ -38,6 +38,12 @@ abstract class PartyRepository {
   /// 파티 정보를 업데이트합니다 (생성자만 가능)
   Future<Either<Failure, PartyEntity>> updateParty(PartyEntity party);
 
+  /// 내가 만든 파티 목록을 가져옵니다
+  Future<Either<Failure, List<PartyEntity>>> getMyParties();
+
+  /// 내가 참가한 파티 목록을 가져옵니다
+  Future<Either<Failure, List<PartyEntity>>> getJoinedParties();
+
   /// 파티 상태 변화를 스트림으로 구독합니다
   Stream<List<PartyEntity>> get partiesStream;
 

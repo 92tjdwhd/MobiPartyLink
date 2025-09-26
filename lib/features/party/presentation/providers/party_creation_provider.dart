@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mobi_party_link/core/di/injection.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
+import 'package:mobi_party_link/core/data/mock_party_data.dart';
 
 part 'party_creation_provider.g.dart';
 
@@ -49,8 +50,17 @@ class PartyCreationNotifier extends _$PartyCreationNotifier {
     );
 
     result.fold(
-      (failure) => state = AsyncValue.error(failure, StackTrace.current),
-      (party) => state = AsyncValue.data(party),
+      (failure) {
+        print('파티 생성 실패: $failure');
+        state = AsyncValue.error(failure, StackTrace.current);
+      },
+      (party) {
+        print('파티 생성 성공: ${party.name}');
+        // 새로 생성된 파티를 Mock 데이터에 추가
+        MockPartyData.addMyParty(party);
+        print('Mock 데이터에 추가됨. 현재 파티 수: ${MockPartyData.getMyParties().length}');
+        state = AsyncValue.data(party);
+      },
     );
   }
 

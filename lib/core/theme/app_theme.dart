@@ -15,11 +15,34 @@ class AppTheme {
         seedColor: primaryColor,
         brightness: Brightness.light,
       ),
-      textTheme: GoogleFonts.notoSansTextTheme(),
+      scaffoldBackgroundColor: Colors.white,
+      cardColor: Colors.white,
+      textTheme: GoogleFonts.notoSansTextTheme().copyWith(
+        titleLarge: GoogleFonts.notoSans(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        ),
+        bodyLarge: GoogleFonts.notoSans(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: Colors.black87,
+        ),
+        bodyMedium: GoogleFonts.notoSans(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Colors.black54,
+        ),
+        bodySmall: GoogleFonts.notoSans(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: Colors.black38,
+        ),
+      ),
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         titleTextStyle: GoogleFonts.notoSans(
           fontSize: 20,
@@ -40,6 +63,14 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+        color: Colors.white,
+      ),
+      dividerColor: const Color(0xFFE0E0E0),
+      shadowColor: Colors.black.withOpacity(0.1),
+      tabBarTheme: TabBarThemeData(
+        labelColor: Colors.black87,
+        unselectedLabelColor: Colors.black26,
+        indicatorColor: primaryColor,
       ),
     );
   }
@@ -51,11 +82,35 @@ class AppTheme {
         seedColor: primaryColor,
         brightness: Brightness.dark,
       ),
-      textTheme: GoogleFonts.notoSansTextTheme(ThemeData.dark().textTheme),
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      cardColor: const Color(0xFF1E1E1E),
+      textTheme:
+          GoogleFonts.notoSansTextTheme(ThemeData.dark().textTheme).copyWith(
+        titleLarge: GoogleFonts.notoSans(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+        bodyLarge: GoogleFonts.notoSans(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: Colors.white,
+        ),
+        bodyMedium: GoogleFonts.notoSans(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Colors.white70,
+        ),
+        bodySmall: GoogleFonts.notoSans(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: Colors.white60,
+        ),
+      ),
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF121212),
         foregroundColor: Colors.white,
         titleTextStyle: GoogleFonts.notoSans(
           fontSize: 20,
@@ -76,6 +131,14 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+        color: const Color(0xFF1E1E1E),
+      ),
+      dividerColor: const Color(0xFF333333),
+      shadowColor: Colors.black.withOpacity(0.3),
+      tabBarTheme: TabBarThemeData(
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white38,
+        indicatorColor: primaryColor,
       ),
     );
   }

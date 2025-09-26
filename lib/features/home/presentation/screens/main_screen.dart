@@ -1,7 +1,21 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobi_party_link/core/theme/app_theme.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_recruitment_bottom_sheet.dart';
+import 'package:mobi_party_link/core/services/profile_service.dart';
+import 'package:mobi_party_link/features/profile/presentation/widgets/profile_setup_bottom_sheet.dart';
+import 'package:mobi_party_link/features/party/presentation/widgets/party_management_bottom_sheet.dart';
+import 'package:mobi_party_link/features/party/presentation/widgets/party_info_bottom_sheet.dart';
+import 'package:mobi_party_link/features/party/presentation/widgets/party_edit_bottom_sheet.dart';
+import 'package:mobi_party_link/features/notification/presentation/screens/notification_settings_screen.dart';
+import 'package:mobi_party_link/features/profile/presentation/providers/profile_provider.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
+import 'package:mobi_party_link/features/party/presentation/widgets/party_card.dart';
+import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
+import 'package:mobi_party_link/features/permission/presentation/providers/permission_provider.dart';
+import 'package:mobi_party_link/features/permission/presentation/widgets/permission_dialog.dart';
+import 'package:mobi_party_link/features/settings/presentation/screens/settings_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -18,6 +32,29 @@ class _MainScreenState extends ConsumerState<MainScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // 권한 체크 및 요청
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndRequestPermissions();
+    });
+  }
+
+  /// 권한 체크 및 요청
+  Future<void> _checkAndRequestPermissions() async {
+    final permissionNotifier = ref.read(permissionProvider.notifier);
+
+    // 권한 상태 체크
+    await permissionNotifier.checkPermissions();
+
+    // 권한이 허용되지 않은 경우 다이얼로그 표시
+    final permissionState = ref.read(permissionProvider);
+    if (!permissionState.areAllPermissionsGranted) {
+      final granted = await showPermissionDialog(context);
+      if (granted == true) {
+        // 권한이 허용된 경우 다시 체크
+        await permissionNotifier.checkPermissions();
+      }
+    }
   }
 
   @override
@@ -28,37 +65,62 @@ class _MainScreenState extends ConsumerState<MainScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 플랫폼 감지 (웹 환경 고려)
+    final isAndroid = !kIsWeb && Platform.isAndroid;
+    final isIOS = !kIsWeb && Platform.isIOS;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildTabBar(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: isIOS ? _buildIOSAppBar() : null,
+      body: isAndroid
+          ? SafeArea(
+              child: Column(
+                children: [
+                  _buildAndroidAppBar(),
+                  _buildTabBar(),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildJoinedPartiesTab(),
+                        _buildCreatedPartiesTab(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Column(
               children: [
-                _buildJoinedPartiesTab(),
-                _buildCreatedPartiesTab(),
+                // 웹이나 iOS가 아닌 경우 기본 AppBar 표시
+                if (!isIOS) _buildWebAppBar(),
+                _buildTabBar(),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildJoinedPartiesTab(),
+                      _buildCreatedPartiesTab(),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  // iOS용 AppBar (네이티브 AppBar 사용)
+  PreferredSizeWidget _buildIOSAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      title: const Text(
+      title: Text(
         '모비링크',
         style: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF1A1A1A),
+          color: Theme.of(context).textTheme.titleLarge?.color,
           letterSpacing: -0.5,
         ),
       ),
@@ -71,69 +133,280 @@ class _MainScreenState extends ConsumerState<MainScreen>
     );
   }
 
-  Widget _buildUserProfile() {
+  // 웹용 AppBar (Android와 유사하지만 SafeArea 없음)
+  Widget _buildWebAppBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFFE5E5E5),
-          width: 1,
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: const Color(0xFF6B21A8),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFFE5E5E5),
-                width: 1,
-              ),
-            ),
-            child: const Icon(
-              Icons.person_rounded,
-              color: Colors.white,
-              size: 18,
+          Text(
+            '모비링크',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.titleLarge?.color,
+              letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+          Row(
             children: [
-              const Text(
-                '플레이어',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
-                  letterSpacing: -0.2,
-                ),
-              ),
-              const Text(
-                '전사 • 1500',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF666666),
-                  letterSpacing: -0.1,
-                ),
-              ),
+              _buildUserProfile(),
+              const SizedBox(width: 12),
+              _buildSettingsButton(),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // Android용 커스텀 AppBar
+  Widget _buildAndroidAppBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '모비링크',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.titleLarge?.color,
+              letterSpacing: -0.5,
+            ),
+          ),
+          Row(
+            children: [
+              _buildUserProfile(),
+              const SizedBox(width: 12),
+              _buildSettingsButton(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserProfile() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final hasProfileAsync = ref.watch(hasProfileProvider);
+
+        return hasProfileAsync.when(
+          data: (hasProfile) {
+            if (hasProfile) {
+              return _buildExistingProfile(ref);
+            } else {
+              return _buildProfileSetup();
+            }
+          },
+          loading: () => _buildProfileSetup(),
+          error: (error, stack) => _buildProfileSetup(),
+        );
+      },
+    );
+  }
+
+  Widget _buildExistingProfile(WidgetRef ref) {
+    final profileAsync = ref.watch(profileDataProvider);
+
+    return profileAsync.when(
+      data: (profile) {
+        if (profile == null) {
+          return _buildProfileSetup();
+        }
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Theme.of(context).dividerColor,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor,
+                    width: 1,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    profile.nickname,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  Text(
+                    '${profile.job} • ${profile.power}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => _buildProfileSetup(),
+      error: (error, stack) => _buildProfileSetup(),
+    );
+  }
+
+  Widget _buildProfileSetup() {
+    return GestureDetector(
+      onTap: _showProfileSetupBottomSheet,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor,
+                  width: 1,
+                ),
+              ),
+              child: const Icon(
+                Icons.person_add_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              '프로필 설정하기',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).primaryColor,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showProfileSetupBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ProfileSetupBottomSheet(
+        onProfileSaved: () {
+          // 프로필 저장 후 메인 화면 새로고침
+          refreshProfile(ref);
+        },
+      ),
+    );
+  }
+
+  void _showPartyManagementBottomSheet(PartyEntity party) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PartyManagementBottomSheet(
+        party: party,
+      ),
+    );
+  }
+
+  void _showPartyEditBottomSheet(PartyEntity party) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PartyEditBottomSheet(
+        party: party,
+      ),
+    );
+  }
+
+  void _showPartyInfoBottomSheet(PartyEntity party) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PartyInfoBottomSheet(
+        party: party,
       ),
     );
   }
@@ -143,10 +416,10 @@ class _MainScreenState extends ConsumerState<MainScreen>
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFE5E5E5),
+          color: Theme.of(context).dividerColor,
           width: 1,
         ),
         boxShadow: [
@@ -159,11 +432,16 @@ class _MainScreenState extends ConsumerState<MainScreen>
       ),
       child: IconButton(
         onPressed: () {
-          // TODO: 설정 화면으로 이동
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SettingsScreen(),
+            ),
+          );
         },
-        icon: const Icon(
+        icon: Icon(
           Icons.settings_rounded,
-          color: Color(0xFF666666),
+          color: Theme.of(context).textTheme.titleLarge?.color,
           size: 20,
         ),
       ),
@@ -172,22 +450,22 @@ class _MainScreenState extends ConsumerState<MainScreen>
 
   Widget _buildTabBar() {
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: TabBar(
         controller: _tabController,
-        indicatorColor: const Color(0xFF6B21A8),
+        indicatorColor: Theme.of(context).primaryColor,
         indicatorWeight: 3,
         indicatorSize: TabBarIndicatorSize.label,
-        labelColor: const Color(0xFF6B21A8),
-        unselectedLabelColor: const Color(0xFF999999),
-        labelStyle: const TextStyle(
+        labelColor: Theme.of(context).textTheme.titleLarge?.color,
+        unselectedLabelColor: Theme.of(context).textTheme.bodySmall?.color,
+        labelStyle: TextStyle(
           fontSize: 15,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           letterSpacing: -0.2,
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: TextStyle(
           fontSize: 15,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w400,
           letterSpacing: -0.2,
         ),
         tabs: const [
@@ -199,21 +477,97 @@ class _MainScreenState extends ConsumerState<MainScreen>
   }
 
   Widget _buildJoinedPartiesTab() {
-    return _buildPartyList(
-      parties: [], // TODO: 참가한 파티 데이터
-      showCreateButton: false,
+    return Consumer(
+      builder: (context, ref, child) {
+        final joinedPartiesAsync = ref.watch(joinedPartiesProvider);
+
+        return joinedPartiesAsync.when(
+          data: (parties) => _buildPartyList(
+            parties: parties,
+            showCreateButton: false,
+          ),
+          loading: () => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          error: (error, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '파티 목록을 불러올 수 없습니다',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    refreshPartyList(ref);
+                  },
+                  child: Text('다시 시도'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildCreatedPartiesTab() {
-    return _buildPartyList(
-      parties: [], // TODO: 내가 만든 파티 데이터
-      showCreateButton: true,
+    return Consumer(
+      builder: (context, ref, child) {
+        final myPartiesAsync = ref.watch(myPartiesProvider);
+
+        return myPartiesAsync.when(
+          data: (parties) => _buildPartyList(
+            parties: parties,
+            showCreateButton: true,
+          ),
+          loading: () => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          error: (error, stack) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '파티 목록을 불러올 수 없습니다',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    refreshPartyList(ref);
+                  },
+                  child: Text('다시 시도'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildPartyList({
-    required List<dynamic> parties,
+    required List<PartyEntity> parties,
     required bool showCreateButton,
   }) {
     return Column(
@@ -226,9 +580,37 @@ class _MainScreenState extends ConsumerState<MainScreen>
                   padding: const EdgeInsets.all(16),
                   itemCount: parties.length,
                   itemBuilder: (context, index) {
-                    return _buildPartyCard(
+                    return PartyCard(
                       party: parties[index],
-                      showShareButton: showCreateButton,
+                      isJoinedParty:
+                          !showCreateButton, // showCreateButton이 false면 참가한 파티
+                      isMyParty:
+                          showCreateButton, // showCreateButton이 true면 내가 만든 파티
+                      onTap: () {
+                        // 파티 타입에 따라 다른 바텀시트 표시
+                        if (showCreateButton) {
+                          // 내가 만든 파티 (파티장) - 파티 관리 바텀시트
+                          _showPartyManagementBottomSheet(parties[index]);
+                        } else {
+                          // 참가한 파티 (일반 참여자) - 파티 정보 보기 바텀시트
+                          _showPartyInfoBottomSheet(parties[index]);
+                        }
+                      },
+                      onEdit: showCreateButton
+                          ? () {
+                              _showPartyEditBottomSheet(parties[index]);
+                            }
+                          : null,
+                      onShare: showCreateButton
+                          ? () {
+                              // TODO: 파티 공유 기능
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('파티 공유 기능은 준비 중입니다'),
+                                ),
+                              );
+                            }
+                          : null,
                     );
                   },
                 ),
@@ -248,7 +630,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
           Icons.add_rounded,
           size: 20,
         ),
-        label: const Text(
+        label: Text(
           '파티 만들기',
           style: TextStyle(
             fontSize: 16,
@@ -257,7 +639,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6B21A8),
+          backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
@@ -297,120 +679,6 @@ class _MainScreenState extends ConsumerState<MainScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPartyCard({
-    required dynamic party,
-    required bool showShareButton,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFF0F0F0),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '서큐버스 레이드 (입문)',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A1A1A),
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                ),
-                if (showShareButton)
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8F8F8),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: const Color(0xFFE5E5E5),
-                        width: 1,
-                      ),
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        // TODO: 파티 공유 기능
-                      },
-                      icon: const Icon(
-                        Icons.share_rounded,
-                        color: Color(0xFF6B21A8),
-                        size: 18,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                _buildStatusChip('대기중', const Color(0xFFFF9500)),
-                _buildInfoChip('입문', const Color(0xFF007AFF)),
-                _buildInfoChip('4인', const Color(0xFF34C759)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Icon(
-                  Icons.access_time_rounded,
-                  size: 16,
-                  color: Color(0xFF999999),
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  '2024.01.15 20:00',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF666666),
-                    letterSpacing: -0.1,
-                  ),
-                ),
-                const Spacer(),
-                const Text(
-                  '2/4',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF666666),
-                    letterSpacing: -0.1,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(
-                  Icons.people_rounded,
-                  size: 16,
-                  color: Color(0xFF999999),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

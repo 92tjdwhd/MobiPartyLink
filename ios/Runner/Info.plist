@@ -49,5 +49,16 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- 알림 권한 설명 -->
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>파티 시작 알림을 받기 위해 알림 권한이 필요합니다.</string>
+	
+	<!-- 백그라운드 모드 -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>background-processing</string>
+		<string>background-fetch</string>
+	</array>
 </dict>
 </plist>

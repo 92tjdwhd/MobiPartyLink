@@ -24,16 +24,17 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.ideaware.mobipartylink"
-    compileSdk 35
-    ndkVersion "25.1.8937393"
+    compileSdk 36
+    ndkVersion "26.1.10909125"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '17'
     }
 
     sourceSets {
@@ -41,9 +42,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.ideaware.mobipartylink"
-        minSdk 21
-        targetSdk 35
+        applicationId "studio.deskmonent.mobipartylink"
+        minSdkVersion flutter.minSdkVersion
+        targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
@@ -65,4 +66,5 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'androidx.multidex:multidex:2.0.1'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }

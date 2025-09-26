@@ -17,10 +17,14 @@ class PartyUtils {
     switch (status) {
       case PartyStatus.pending:
         return '대기중';
+      case PartyStatus.startingSoon:
+        return '시작 5분 전';
       case PartyStatus.ongoing:
         return '진행중';
-      case PartyStatus.ended:
-        return '종료됨';
+      case PartyStatus.completed:
+        return '완료';
+      case PartyStatus.expired:
+        return '만료됨';
       case PartyStatus.cancelled:
         return '취소';
     }
@@ -152,7 +156,7 @@ class PartyUtils {
     }
 
     // 파티가 종료된 경우
-    if (party.status == PartyStatus.ended) {
+    if (party.status == PartyStatus.completed) {
       return false;
     }
 
@@ -182,7 +186,7 @@ class PartyUtils {
       partyId: partyId,
       userId: user.id,
       nickname: nickname ?? '익명사용자',
-      job: job,
+      jobId: job,
       power: power,
       joinedAt: DateTime.now(),
     );

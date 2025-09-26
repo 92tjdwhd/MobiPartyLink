@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/presentation/providers/party_creation_provider.dart';
+import 'package:mobi_party_link/core/constants/party_templates.dart';
+import 'package:mobi_party_link/core/services/profile_service.dart';
+import 'package:mobi_party_link/features/profile/presentation/widgets/profile_setup_bottom_sheet.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
 
 class PartyRecruitmentBottomSheet extends ConsumerStatefulWidget {
   const PartyRecruitmentBottomSheet({super.key});
@@ -14,7 +18,6 @@ class _PartyRecruitmentBottomSheetState
     extends ConsumerState<PartyRecruitmentBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _partyNameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _minPowerController = TextEditingController();
   final TextEditingController _maxPowerController = TextEditingController();
 
@@ -23,6 +26,7 @@ class _PartyRecruitmentBottomSheetState
   String _selectedContentType = '아르카나 레이드';
   int _maxMembers = 6;
   DateTime _startTime = DateTime.now().add(const Duration(hours: 1));
+  DateTime _endTime = DateTime.now().add(const Duration(hours: 2));
   bool _requirePower = true;
   bool _requireJob = true;
   bool _requireJobCategory = false;
@@ -33,7 +37,6 @@ class _PartyRecruitmentBottomSheetState
   @override
   void dispose() {
     _partyNameController.dispose();
-    _descriptionController.dispose();
     _minPowerController.dispose();
     _maxPowerController.dispose();
     super.dispose();
@@ -42,8 +45,8 @@ class _PartyRecruitmentBottomSheetState
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
@@ -68,13 +71,11 @@ class _PartyRecruitmentBottomSheetState
                   children: [
                     _buildPartyNameField(),
                     const SizedBox(height: 20),
-                    _buildDescriptionField(),
+                    _buildContentTypeField(),
                     const SizedBox(height: 20),
                     _buildCategoryField(),
                     const SizedBox(height: 20),
                     _buildDifficultyField(),
-                    const SizedBox(height: 20),
-                    _buildContentTypeField(),
                     const SizedBox(height: 20),
                     _buildDateTimeField(),
                     const SizedBox(height: 20),
@@ -112,7 +113,7 @@ class _PartyRecruitmentBottomSheetState
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: const Color(0xFFE0E0E0),
+        color: Theme.of(context).dividerColor,
         borderRadius: BorderRadius.circular(2),
       ),
     );
@@ -123,20 +124,20 @@ class _PartyRecruitmentBottomSheetState
       padding: const EdgeInsets.fromLTRB(24, 20, 20, 0),
       child: Row(
         children: [
-          const Text(
+          Text(
             '파티 만들기',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF333333),
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
-          const Spacer(),
+          Spacer(),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(
+            icon: Icon(
               Icons.close,
-              color: Color(0xFF666666),
+              color: Theme.of(context).textTheme.bodyMedium?.color,
               size: 20,
             ),
           ),
@@ -149,34 +150,40 @@ class _PartyRecruitmentBottomSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '파티명',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF333333),
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _partyNameController,
+          style: TextStyle(
+              color: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.color), // 입력 텍스트 색상 테마 기반
           decoration: InputDecoration(
             hintText: '파티명을 입력하세요',
-            hintStyle: const TextStyle(
-              color: Color(0xFF999999),
+            hintStyle: TextStyle(
+              color: Theme.of(context).textTheme.bodySmall?.color,
               fontSize: 14,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -198,12 +205,12 @@ class _PartyRecruitmentBottomSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '날짜/시간',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF333333),
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -213,15 +220,15 @@ class _PartyRecruitmentBottomSheetState
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE0E0E0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: Theme.of(context).scaffoldBackgroundColor,
             ),
             child: Text(
               _formatDateTime(_startTime),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF333333),
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
           ),
@@ -234,12 +241,12 @@ class _PartyRecruitmentBottomSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '인원수',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF333333),
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -249,15 +256,15 @@ class _PartyRecruitmentBottomSheetState
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE0E0E0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: Theme.of(context).scaffoldBackgroundColor,
             ),
             child: Text(
               '$_maxMembers명',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF333333),
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
           ),
@@ -269,13 +276,13 @@ class _PartyRecruitmentBottomSheetState
   Widget _buildCombatPowerToggle() {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
             '전투력 입력 필수',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
         ),
@@ -286,7 +293,7 @@ class _PartyRecruitmentBottomSheetState
               _requirePower = value;
             });
           },
-          activeColor: const Color(0xFF007AFF),
+          activeColor: Theme.of(context).primaryColor,
         ),
       ],
     );
@@ -295,13 +302,13 @@ class _PartyRecruitmentBottomSheetState
   Widget _buildJobSelectionToggle() {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
             '직업 선택 필수',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
         ),
@@ -312,51 +319,7 @@ class _PartyRecruitmentBottomSheetState
               _requireJob = value;
             });
           },
-          activeColor: const Color(0xFF007AFF),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDescriptionField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '파티 설명 (선택사항)',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF333333),
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _descriptionController,
-          maxLines: 3,
-          decoration: InputDecoration(
-            hintText: '파티에 대한 설명을 입력하세요',
-            hintStyle: const TextStyle(
-              color: Color(0xFF999999),
-              fontSize: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            filled: true,
-            fillColor: Colors.white,
-          ),
+          activeColor: Theme.of(context).primaryColor,
         ),
       ],
     );
@@ -366,12 +329,12 @@ class _PartyRecruitmentBottomSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '카테고리',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF333333),
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -381,15 +344,15 @@ class _PartyRecruitmentBottomSheetState
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE0E0E0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: Theme.of(context).scaffoldBackgroundColor,
             ),
             child: Text(
               _selectedCategory,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF333333),
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
           ),
@@ -402,12 +365,12 @@ class _PartyRecruitmentBottomSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '난이도',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF333333),
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -417,15 +380,15 @@ class _PartyRecruitmentBottomSheetState
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE0E0E0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: Theme.of(context).scaffoldBackgroundColor,
             ),
             child: Text(
               _selectedDifficulty,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF333333),
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
           ),
@@ -438,30 +401,30 @@ class _PartyRecruitmentBottomSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '콘텐츠 종류',
+        Text(
+          '템플릿 선택',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF333333),
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
         InkWell(
-          onTap: _selectContentType,
+          onTap: _selectTemplate,
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE0E0E0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: Theme.of(context).scaffoldBackgroundColor,
             ),
             child: Text(
               _selectedContentType,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF333333),
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
           ),
@@ -480,13 +443,17 @@ class _PartyRecruitmentBottomSheetState
             decoration: InputDecoration(
               labelText: '최소 투력',
               hintText: '1000',
+              labelStyle: TextStyle(
+                  color: Theme.of(context).textTheme.titleLarge?.color),
+              hintStyle: TextStyle(
+                  color: Theme.of(context).textTheme.bodySmall?.color),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -498,6 +465,11 @@ class _PartyRecruitmentBottomSheetState
               filled: true,
               fillColor: Colors.white,
             ),
+            style: TextStyle(
+                color: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.color), // 입력 텍스트 색상 테마 기반
             validator: (value) {
               if (_requirePower && (value == null || value.isEmpty)) {
                 return '최소 투력을 입력해주세요';
@@ -514,13 +486,17 @@ class _PartyRecruitmentBottomSheetState
             decoration: InputDecoration(
               labelText: '최대 투력',
               hintText: '2000',
+              labelStyle: TextStyle(
+                  color: Theme.of(context).textTheme.titleLarge?.color),
+              hintStyle: TextStyle(
+                  color: Theme.of(context).textTheme.bodySmall?.color),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -532,6 +508,11 @@ class _PartyRecruitmentBottomSheetState
               filled: true,
               fillColor: Colors.white,
             ),
+            style: TextStyle(
+                color: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.color), // 입력 텍스트 색상 테마 기반
             validator: (value) {
               if (_requirePower && (value == null || value.isEmpty)) {
                 return '최대 투력을 입력해주세요';
@@ -547,13 +528,13 @@ class _PartyRecruitmentBottomSheetState
   Widget _buildJobCategoryToggle() {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
             '직업 제한',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
         ),
@@ -564,7 +545,7 @@ class _PartyRecruitmentBottomSheetState
               _requireJobCategory = value;
             });
           },
-          activeColor: const Color(0xFF007AFF),
+          activeColor: Theme.of(context).primaryColor,
         ),
       ],
     );
@@ -601,10 +582,10 @@ class _PartyRecruitmentBottomSheetState
         Expanded(
           child: Text(
             jobCategory,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
         ),
@@ -612,27 +593,28 @@ class _PartyRecruitmentBottomSheetState
           width: 120,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFE0E0E0)),
+            border: Border.all(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
+            color: Theme.of(context).scaffoldBackgroundColor,
           ),
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.remove, size: 20),
+                icon: Icon(Icons.remove, size: 20),
                 onPressed: () {
                   if (limit > 0) onChanged(limit - 1);
                 },
               ),
               Text(
                 limit.toString(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.add, size: 20),
+                icon: Icon(Icons.add, size: 20),
                 onPressed: () {
                   onChanged(limit + 1);
                 },
@@ -650,7 +632,7 @@ class _PartyRecruitmentBottomSheetState
       child: ElevatedButton(
         onPressed: _createParty,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF007AFF),
+          backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -658,7 +640,7 @@ class _PartyRecruitmentBottomSheetState
           ),
           elevation: 0,
         ),
-        child: const Text(
+        child: Text(
           '파티 생성하기',
           style: TextStyle(
             fontSize: 16,
@@ -671,6 +653,13 @@ class _PartyRecruitmentBottomSheetState
 
   Future<void> _createParty() async {
     if (_formKey.currentState!.validate()) {
+      // 프로필 체크
+      final hasProfile = await ProfileService.hasProfile();
+      if (!hasProfile) {
+        _showProfileSetupDialog();
+        return;
+      }
+
       try {
         await ref.read(partyCreationNotifierProvider.notifier).createParty(
               name: _partyNameController.text.trim(),
@@ -700,6 +689,8 @@ class _PartyRecruitmentBottomSheetState
               backgroundColor: Colors.green,
             ),
           );
+          // 파티 리스트 새로고침
+          refreshPartyList(ref);
           Navigator.pop(context);
         }
       } catch (e) {
@@ -713,6 +704,42 @@ class _PartyRecruitmentBottomSheetState
         }
       }
     }
+  }
+
+  void _showProfileSetupDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('프로필 설정 필요'),
+        content: Text('파티를 생성하기 전에 프로필을 설정해주세요.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('취소'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showProfileSetupBottomSheet();
+            },
+            child: Text('프로필 설정'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showProfileSetupBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ProfileSetupBottomSheet(),
+    ).then((_) {
+      // 프로필 설정 완료 후 파티 생성 재시도
+      _createParty();
+    });
   }
 
   Future<void> _selectDateTime() async {
@@ -745,7 +772,7 @@ class _PartyRecruitmentBottomSheetState
     final int? selectedMembers = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('인원수 선택'),
+        title: Text('인원수 선택'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: List.generate(7, (index) {
@@ -765,37 +792,50 @@ class _PartyRecruitmentBottomSheetState
     }
   }
 
-  Future<void> _selectContentType() async {
-    final String? selectedType = await showDialog<String>(
+  Future<void> _selectTemplate() async {
+    final Map<String, dynamic>? selectedTemplate =
+        await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('콘텐츠 종류 선택'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            '아르카나 레이드',
-            '서큐버스 레이드',
-            '글라스기브넨 레이드',
-            '마스터 던전',
-            '일반 던전',
-            'PvP',
-            '길드 활동',
-            '퀘스트',
-            '이벤트',
-            '연습',
-            '소셜',
-          ]
-              .map((type) => ListTile(
-                    title: Text(type),
-                    onTap: () => Navigator.pop(context, type),
-                  ))
-              .toList(),
+        title: Text('템플릿 선택'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: ListView.builder(
+            itemCount: PartyTemplates.templates.length,
+            itemBuilder: (context, index) {
+              final template = PartyTemplates.templates[index];
+              return ListTile(
+                title: Text('${template['name']} (${template['difficulty']})'),
+                subtitle: Text(
+                    '${template['category']} • ${template['maxMembers']}명 • 투력 ${template['minPower']}-${template['maxPower']}'),
+                onTap: () => Navigator.pop(context, template),
+              );
+            },
+          ),
         ),
       ),
     );
-    if (selectedType != null) {
+
+    if (selectedTemplate != null) {
       setState(() {
-        _selectedCategory = selectedType;
+        _selectedContentType =
+            '${selectedTemplate['name']} (${selectedTemplate['difficulty']})';
+        _selectedCategory = selectedTemplate['category'];
+        _selectedDifficulty = selectedTemplate['difficulty'];
+        _maxMembers = selectedTemplate['maxMembers'];
+        _requireJob = selectedTemplate['requireJob'];
+        _requirePower = selectedTemplate['requirePower'];
+        _requireJobCategory = selectedTemplate['requireJobCategory'];
+        _tankLimit = selectedTemplate['tankLimit'];
+        _healerLimit = selectedTemplate['healerLimit'];
+        _dpsLimit = selectedTemplate['dpsLimit'];
+
+        // 투력 필드에 기본값 설정
+        if (_requirePower) {
+          _minPowerController.text = selectedTemplate['minPower'].toString();
+          _maxPowerController.text = selectedTemplate['maxPower'].toString();
+        }
       });
     }
   }
@@ -804,7 +844,7 @@ class _PartyRecruitmentBottomSheetState
     final String? selectedCategory = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('카테고리 선택'),
+        title: Text('카테고리 선택'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -836,7 +876,7 @@ class _PartyRecruitmentBottomSheetState
     final String? selectedDifficulty = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('난이도 선택'),
+        title: Text('난이도 선택'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

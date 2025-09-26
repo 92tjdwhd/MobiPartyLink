@@ -32,8 +32,10 @@ class PartyEntity with _$PartyEntity {
 }
 
 enum PartyStatus {
-  pending,
-  ongoing,
-  ended,
-  cancelled,
+  pending, // 대기중
+  startingSoon, // 시작 5분 전
+  ongoing, // 진행중
+  completed, // 완료
+  expired, // 만료됨
+  cancelled, // 취소됨
 }
