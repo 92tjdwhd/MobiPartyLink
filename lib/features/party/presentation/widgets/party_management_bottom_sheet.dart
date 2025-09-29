@@ -64,7 +64,9 @@ class _PartyManagementBottomSheetState
       width: 40,
       margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[600]
+            : Colors.grey[300],
         borderRadius: BorderRadius.circular(2.5),
       ),
     );
@@ -76,16 +78,19 @@ class _PartyManagementBottomSheetState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             '파티 관리',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: Color(0xFF666666)),
+            icon: Icon(
+              Icons.close,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -110,19 +115,19 @@ class _PartyManagementBottomSheetState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               '파티 멤버',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
             Text(
               '${widget.party.members.length}/${widget.party.maxMembers}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF666666),
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -141,10 +146,12 @@ class _PartyManagementBottomSheetState
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isLeader ? const Color(0xFF007AFF) : const Color(0xFFE5E5E5),
+          color: isLeader
+              ? Theme.of(context).primaryColor
+              : Theme.of(context).dividerColor,
           width: isLeader ? 2 : 1,
         ),
         boxShadow: [
@@ -161,13 +168,14 @@ class _PartyManagementBottomSheetState
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color:
-                  isLeader ? const Color(0xFF007AFF) : const Color(0xFF6B21A8),
+              color: isLeader
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).colorScheme.secondary,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
               isLeader ? Icons.star : Icons.person,
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               size: 20,
             ),
           ),
@@ -180,10 +188,10 @@ class _PartyManagementBottomSheetState
                   children: [
                     Text(
                       member.nickname,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                     if (isLeader) ...[
@@ -192,10 +200,10 @@ class _PartyManagementBottomSheetState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF007AFF),
+                          color: Theme.of(context).primaryColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
+                        child: Text(
                           '파티장',
                           style: TextStyle(
                             fontSize: 10,
@@ -210,17 +218,17 @@ class _PartyManagementBottomSheetState
                 const SizedBox(height: 4),
                 Text(
                   '${PartyUtils.getJobText(member.jobId)} • 투력 ${member.power}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF666666),
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '참여일: ${_formatDateTime(member.joinedAt)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF999999),
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
               ],
@@ -248,12 +256,28 @@ class _PartyManagementBottomSheetState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('멤버 강퇴'),
-        content: Text('${member.nickname}님을 파티에서 강퇴하시겠습니까?'),
+        backgroundColor: Theme.of(context).cardColor,
+        title: Text(
+          '멤버 강퇴',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge?.color,
+          ),
+        ),
+        content: Text(
+          '${member.nickname}님을 파티에서 강퇴하시겠습니까?',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
+            child: Text(
+              '취소',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {

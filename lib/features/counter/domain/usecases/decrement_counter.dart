@@ -5,11 +5,11 @@ import '../entities/counter_entity.dart';
 import '../repositories/counter_repository.dart';
 
 class DecrementCounter {
-  final CounterRepository repository;
 
   DecrementCounter(this.repository);
+  final CounterRepository repository;
 
   Future<Either<Failure, CounterEntity>> call() async {
-    return await repository.decrementCounter();
+    return repository.decrementCounter();
   }
 }

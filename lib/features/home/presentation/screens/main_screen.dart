@@ -36,7 +36,20 @@ class _MainScreenState extends ConsumerState<MainScreen>
     // 권한 체크 및 요청
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndRequestPermissions();
+      _initializePartyNotifications();
     });
+  }
+
+  /// 파티 알림 초기화
+  Future<void> _initializePartyNotifications() async {
+    try {
+      // 서버에서 파티 목록을 가져와서 알림 동기화
+      // myPartiesProvider와 joinedPartiesProvider가 자동으로 호출되어
+      // 서버 데이터를 가져오고 알림을 동기화함
+      print('파티 알림 초기화 시작 - 서버에서 파티 목록을 가져와서 동기화합니다');
+    } catch (e) {
+      print('파티 알림 초기화 실패: $e');
+    }
   }
 
   /// 권한 체크 및 요청
@@ -262,7 +275,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF76769A)
+                      : Theme.of(context).primaryColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Theme.of(context).dividerColor,
@@ -335,7 +350,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF76769A)
+                    : Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: Theme.of(context).dividerColor,
@@ -354,7 +371,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).primaryColor,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Theme.of(context).primaryColor,
                 letterSpacing: -0.2,
               ),
             ),
@@ -416,7 +435,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E1E1E)
+            : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Theme.of(context).dividerColor,
@@ -441,7 +462,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
         },
         icon: Icon(
           Icons.settings_rounded,
-          color: Theme.of(context).textTheme.titleLarge?.color,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black87,
           size: 20,
         ),
       ),
@@ -639,7 +662,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF76769A)
+              : Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'package:mobi_party_link/core/services/profile_service.dart';
+import 'package:mobi_party_link/features/profile/presentation/providers/profile_provider.dart';
 
 class ProfileSetupBottomSheet extends ConsumerStatefulWidget {
   final VoidCallback? onProfileSaved;
@@ -270,7 +270,9 @@ class _ProfileSetupBottomSheetState
       child: ElevatedButton(
         onPressed: _isLoading ? null : _saveProfile,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF76769A)
+              : Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -348,26 +350,42 @@ class _ProfileSetupBottomSheetState
       });
 
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final profile = {
-          'nickname': _nicknameController.text.trim(),
-          'job': _selectedJob,
-          'power': int.parse(_powerController.text.trim()),
-          'createdAt': DateTime.now().toIso8601String(),
-        };
+        final profile = UserProfile(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          nickname: _nicknameController.text.trim(),
+          jobId: _selectedJob,
+          power: int.parse(_powerController.text.trim()),
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
 
-        await prefs.setString('user_profile', jsonEncode(profile));
+        // 프로필 리스트에 추가
+        final success = await ProfileService.addProfileToList(profile);
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('프로필이 저장되었습니다!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context);
-          // 프로필 저장 후 콜백 호출
-          widget.onProfileSaved?.call();
+        if (success) {
+          // 프로필 새로고침
+          refreshProfile(ref);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('프로필이 저장되었습니다!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context);
+            // 프로필 저장 후 콜백 호출
+            widget.onProfileSaved?.call();
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('프로필은 최대 3개까지 저장할 수 있습니다.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
         }
       } catch (e) {
         if (mounted) {

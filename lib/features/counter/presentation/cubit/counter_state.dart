@@ -1,9 +1,9 @@
 part of 'counter_cubit.dart';
 
 class CounterState {
-  final int count;
 
   const CounterState({required this.count});
+  final int count;
 
   @override
   bool operator ==(Object other) {

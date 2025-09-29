@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/injection.dart';
-import '../providers/counter_provider.dart';
 import '../widgets/counter_display.dart';
 import '../widgets/counter_controls.dart';
 

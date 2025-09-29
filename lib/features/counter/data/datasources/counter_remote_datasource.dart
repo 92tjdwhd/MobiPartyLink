@@ -11,9 +11,9 @@ abstract class CounterRemoteDataSource {
 }
 
 class CounterRemoteDataSourceImpl implements CounterRemoteDataSource {
-  final Dio dio;
 
   CounterRemoteDataSourceImpl({required this.dio});
+  final Dio dio;
 
   @override
   Future<CounterModel> getCounter() async {

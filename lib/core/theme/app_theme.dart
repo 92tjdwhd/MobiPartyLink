@@ -78,9 +78,18 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        brightness: Brightness.dark,
+      primaryColor: Colors.white,
+      colorScheme: const ColorScheme.dark(
+        primary: Colors.white,
+        onPrimary: Colors.black,
+        secondary: Color(0xFF8B5CF6),
+        onSecondary: Colors.white,
+        error: Color(0xFFEF4444),
+        onError: Colors.white,
+        surface: Color(0xFF121212),
+        onSurface: Colors.white,
+        background: Color(0xFF121212),
+        onBackground: Colors.white,
       ),
       scaffoldBackgroundColor: const Color(0xFF121212),
       cardColor: const Color(0xFF1E1E1E),

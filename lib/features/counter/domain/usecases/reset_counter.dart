@@ -5,11 +5,11 @@ import '../entities/counter_entity.dart';
 import '../repositories/counter_repository.dart';
 
 class ResetCounter {
-  final CounterRepository repository;
 
   ResetCounter(this.repository);
+  final CounterRepository repository;
 
   Future<Either<Failure, CounterEntity>> call() async {
-    return await repository.resetCounter();
+    return repository.resetCounter();
   }
 }

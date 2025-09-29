@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
 import 'package:mobi_party_link/core/utils/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -12,9 +13,12 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   bool _isInitialized = false;
+
+  // 알림 설정 관련 상수
+  static const String _notificationMinutesKey = 'notification_minutes_before';
+  static const int _defaultNotificationMinutes = 5;
 
   /// 알림 서비스 초기화
   Future<void> initialize() async {
@@ -44,17 +48,6 @@ class NotificationService {
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
 
-      // TODO: FCM 초기화 (Firebase 설정 완료 후 활성화)
-      // await _firebaseMessaging.requestPermission(
-      //   alert: true,
-      //   badge: true,
-      //   sound: true,
-      // );
-
-      // FCM 토큰 가져오기
-      // final token = await _firebaseMessaging.getToken();
-      // Logger.info('FCM Token: $token');
-
       _isInitialized = true;
       Logger.info('알림 서비스 초기화 완료 (로컬 알림만)');
     } catch (e) {
@@ -68,10 +61,38 @@ class NotificationService {
     // TODO: 알림 탭 시 파티 상세 화면으로 이동
   }
 
+  /// 알림 설정 시간 조회
+  Future<int> getNotificationMinutesBefore() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getInt(_notificationMinutesKey) ??
+          _defaultNotificationMinutes;
+    } catch (e) {
+      Logger.error('알림 설정 조회 실패: $e');
+      return _defaultNotificationMinutes;
+    }
+  }
+
+  /// 알림 설정 시간 저장
+  Future<void> setNotificationMinutesBefore(int minutes) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_notificationMinutesKey, minutes);
+      Logger.info('알림 설정 저장 완료: ${minutes}분 전');
+    } catch (e) {
+      Logger.error('알림 설정 저장 실패: $e');
+    }
+  }
+
   /// 파티 시작 N분 전 알림 예약
   Future<void> schedulePartyNotification(
       PartyEntity party, int minutesBefore) async {
     try {
+      // 초기화 확인
+      if (!_isInitialized) {
+        await initialize();
+      }
+
       final notificationTime =
           party.startTime.subtract(Duration(minutes: minutesBefore));
       final now = DateTime.now();
@@ -82,6 +103,9 @@ class NotificationService {
         return;
       }
 
+      // 고유한 알림 ID 생성 (파티 ID + 시간 기반)
+      final notificationId = '${party.id}_${minutesBefore}'.hashCode;
+
       const androidDetails = AndroidNotificationDetails(
         'party_notifications',
         '파티 알림',
@@ -89,6 +113,10 @@ class NotificationService {
         importance: Importance.high,
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
+        playSound: true,
+        enableVibration: true,
+        usesChronometer: false,
+        showWhen: true,
       );
 
       const iosDetails = DarwinNotificationDetails(
@@ -103,7 +131,7 @@ class NotificationService {
       );
 
       await _localNotifications.zonedSchedule(
-        party.hashCode, // 고유 ID로 파티 해시코드 사용
+        notificationId,
         '파티 시작 예정',
         '${party.name} 파티가 ${_getTimeText(minutesBefore)} 시작됩니다!',
         tz.TZDateTime.from(notificationTime, tz.local),
@@ -111,6 +139,7 @@ class NotificationService {
         payload: party.id,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       );
 
       Logger.info(
@@ -138,7 +167,10 @@ class NotificationService {
   /// 파티 알림 취소
   Future<void> cancelPartyNotification(PartyEntity party) async {
     try {
-      await _localNotifications.cancel(party.hashCode);
+      // 모든 알림 시간대에 대해 취소
+      final currentMinutes = await getNotificationMinutesBefore();
+      final notificationId = '${party.id}_${currentMinutes}'.hashCode;
+      await _localNotifications.cancel(notificationId);
       Logger.info('파티 알림 취소 완료: ${party.name}');
     } catch (e) {
       Logger.error('파티 알림 취소 실패: $e');
@@ -155,6 +187,45 @@ class NotificationService {
     }
   }
 
+  /// 파티 리스트로 전체 알림 재등록
+  Future<void> rescheduleAllPartyNotifications(
+      List<PartyEntity> parties) async {
+    try {
+      // 기존 알림 모두 취소
+      await cancelAllPartyNotifications();
+
+      // 현재 알림 설정 시간 조회
+      final minutesBefore = await getNotificationMinutesBefore();
+
+      // 각 파티에 대해 알림 재등록
+      for (final party in parties) {
+        await schedulePartyNotification(party, minutesBefore);
+      }
+
+      Logger.info(
+          '전체 파티 알림 재등록 완료: ${parties.length}개 파티, ${minutesBefore}분 전');
+    } catch (e) {
+      Logger.error('전체 파티 알림 재등록 실패: $e');
+    }
+  }
+
+  /// 알림 설정 변경 시 전체 알림 재등록
+  Future<void> updateNotificationSettings(
+      int newMinutesBefore, List<PartyEntity> parties) async {
+    try {
+      // 새로운 설정 저장
+      await setNotificationMinutesBefore(newMinutesBefore);
+
+      // 전체 알림 재등록
+      await rescheduleAllPartyNotifications(parties);
+
+      Logger.info(
+          '알림 설정 변경 완료: ${newMinutesBefore}분 전, ${parties.length}개 파티 재등록');
+    } catch (e) {
+      Logger.error('알림 설정 변경 실패: $e');
+    }
+  }
+
   /// 예약된 알림 목록 조회
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     try {
@@ -165,29 +236,123 @@ class NotificationService {
     }
   }
 
-  /// FCM 토큰 가져오기
-  Future<String?> getFCMToken() async {
+  /// 즉시 테스트 알림 표시
+  Future<void> showTestNotification() async {
     try {
-      return await _firebaseMessaging.getToken();
+      // 초기화 확인
+      if (!_isInitialized) {
+        await initialize();
+      }
+
+      const androidDetails = AndroidNotificationDetails(
+        'test_notifications',
+        '테스트 알림',
+        channelDescription: '알림 테스트용',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _localNotifications.show(
+        999, // 테스트용 고유 ID
+        'Mobi Party Link 테스트',
+        '알림이 정상적으로 작동합니다! 🎉',
+        notificationDetails,
+        payload: 'test_notification',
+      );
+
+      Logger.info('테스트 알림 표시 완료');
     } catch (e) {
-      Logger.error('FCM 토큰 가져오기 실패: $e');
-      return null;
+      Logger.error('테스트 알림 표시 실패: $e');
+      rethrow;
     }
   }
 
-  /// FCM 토큰 새로고침 리스너
-  void listenToTokenRefresh(Function(String) onTokenRefresh) {
-    _firebaseMessaging.onTokenRefresh.listen(onTokenRefresh);
-  }
+  /// 지정된 시간 후 테스트 알림 예약
+  Future<void> scheduleTestNotification(int minutes) async {
+    try {
+      // 초기화 확인
+      if (!_isInitialized) {
+        await initialize();
+      }
 
-  /// 백그라운드 메시지 핸들러
-  static Future<void> handleBackgroundMessage(RemoteMessage message) async {
-    Logger.info('백그라운드 메시지 수신: ${message.messageId}');
-    // TODO: 백그라운드 메시지 처리 로직
-  }
+      // 기존 테스트 알림 모두 취소
+      await _localNotifications.cancelAll();
+      print('기존 알림 모두 취소 완료');
 
-  /// 포그라운드 메시지 핸들러
-  void handleForegroundMessage(Function(RemoteMessage) onMessage) {
-    FirebaseMessaging.onMessage.listen(onMessage);
+      final notificationTime = DateTime.now().add(Duration(minutes: minutes));
+      final scheduledTime = tz.TZDateTime.from(notificationTime, tz.local);
+
+      // 고유한 알림 ID 생성 (현재 시간 기반)
+      final notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+      print('현재 시간: ${DateTime.now()}');
+      print('알림 예약 시간: $scheduledTime');
+      print('알림 ID: $notificationId');
+
+      const androidDetails = AndroidNotificationDetails(
+        'test_notifications',
+        '테스트 알림',
+        channelDescription: '알림 테스트용',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+        playSound: true,
+        enableVibration: true,
+        usesChronometer: false,
+        showWhen: true,
+        when: null, // Android에서 자동으로 설정됨
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+
+      const notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      // Android 15 호환성을 위해 zonedSchedule 사용하되 설정 조정
+      await _localNotifications.zonedSchedule(
+        notificationId, // 고유한 알림 ID
+        'Mobi Party Link 테스트',
+        '${minutes}분 후 테스트 알림입니다! 🎉',
+        scheduledTime,
+        notificationDetails,
+        payload: 'test_notification_scheduled',
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+
+      // 예약된 알림 목록 확인
+      final pendingNotifications = await getPendingNotifications();
+      print('현재 예약된 알림 수: ${pendingNotifications.length}');
+      for (final notification in pendingNotifications) {
+        print('예약된 알림: ID=${notification.id}, 제목=${notification.title}');
+      }
+
+      Logger.info('테스트 알림 예약 완료: ${minutes}분 후');
+      print('테스트 알림 예약 완료: ${minutes}분 후');
+    } catch (e) {
+      Logger.error('테스트 알림 예약 실패: $e');
+      print('테스트 알림 예약 실패: $e');
+      debugPrint('테스트 알림 예약 실패: $e');
+      rethrow;
+    }
   }
 }

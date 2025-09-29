@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
 import 'package:mobi_party_link/features/party/presentation/providers/party_edit_provider.dart';
-import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
 import 'package:mobi_party_link/core/constants/party_templates.dart';
 import 'package:mobi_party_link/core/constants/party_constants.dart';
-import 'package:mobi_party_link/core/services/profile_service.dart';
 
 class PartyEditBottomSheet extends ConsumerStatefulWidget {
   final PartyEntity party;
@@ -78,14 +76,14 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
-            offset: Offset(0, -2),
+            offset: const Offset(0, -2),
           ),
         ],
       ),
@@ -137,7 +135,9 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
       width: 40,
       margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[600]
+            : Colors.grey[300],
         borderRadius: BorderRadius.circular(2.5),
       ),
     );
@@ -149,16 +149,19 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             '파티 수정',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: Color(0xFF666666)),
+            icon: Icon(
+              Icons.close,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -170,40 +173,49 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '파티명',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _partyNameController,
-          style: const TextStyle(color: Color(0xFF000000)),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           decoration: InputDecoration(
             hintText: '파티명을 입력하세요',
-            hintStyle: const TextStyle(
-              color: Color(0xFF999999),
+            hintStyle: TextStyle(
+              color: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.color
+                  ?.withOpacity(0.6),
               fontSize: 14,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(
+                color: Theme.of(context).dividerColor,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(
+                color: Theme.of(context).dividerColor,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).cardColor,
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -220,12 +232,12 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '템플릿 선택',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -235,9 +247,9 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE0E0E0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -249,13 +261,17 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                   style: TextStyle(
                     fontSize: 14,
                     color: _selectedContentType.isEmpty
-                        ? const Color(0xFF999999)
-                        : const Color(0xFF000000),
+                        ? Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.color
+                            ?.withOpacity(0.6)
+                        : Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_drop_down,
-                  color: Color(0xFF666666),
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ],
             ),
@@ -269,12 +285,12 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '카테고리',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -283,22 +299,23 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).cardColor,
           ),
-          style: const TextStyle(color: Color(0xFF000000)),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           items: PartyConstants.categories.map((String category) {
             return DropdownMenuItem<String>(
               value: category,
@@ -327,12 +344,12 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '난이도',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -341,22 +358,23 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).cardColor,
           ),
-          style: const TextStyle(color: Color(0xFF000000)),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           items: PartyConstants.difficulties.map((String difficulty) {
             return DropdownMenuItem<String>(
               value: difficulty,
@@ -385,12 +403,12 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '시작 날짜/시간',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -400,23 +418,23 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE0E0E0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '${_startTime.year}.${_startTime.month.toString().padLeft(2, '0')}.${_startTime.day.toString().padLeft(2, '0')} ${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF000000),
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.access_time,
-                  color: Color(0xFF666666),
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ],
             ),
@@ -430,12 +448,12 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '최대 인원수',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -444,22 +462,23 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).cardColor,
           ),
-          style: const TextStyle(color: Color(0xFF000000)),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           items: List.generate(8, (index) => index + 1).map((int value) {
             return DropdownMenuItem<int>(
               value: value,
@@ -491,12 +510,12 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               '투력 요구사항',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: Theme.of(context).textTheme.titleMedium?.color,
               ),
             ),
             Switch(
@@ -506,7 +525,10 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                   _requirePower = value;
                 });
               },
-              activeColor: const Color(0xFF007AFF),
+              activeColor: Colors.green,
+              activeTrackColor: Colors.green.withOpacity(0.3),
+              inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
+              inactiveTrackColor: Theme.of(context).dividerColor,
             ),
           ],
         ),
@@ -518,27 +540,30 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                 child: TextFormField(
                   controller: _minPowerController,
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Color(0xFF000000)),
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color),
                   decoration: InputDecoration(
                     labelText: '최소 투력',
                     hintText: '1000',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                      borderSide:
+                          BorderSide(color: Theme.of(context).dividerColor),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                      borderSide:
+                          BorderSide(color: Theme.of(context).dividerColor),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF007AFF), width: 1),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor, width: 1),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 12),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: Theme.of(context).cardColor,
                   ),
                 ),
               ),
@@ -547,27 +572,30 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                 child: TextFormField(
                   controller: _maxPowerController,
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Color(0xFF000000)),
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color),
                   decoration: InputDecoration(
                     labelText: '최대 투력',
                     hintText: '2000',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                      borderSide:
+                          BorderSide(color: Theme.of(context).dividerColor),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                      borderSide:
+                          BorderSide(color: Theme.of(context).dividerColor),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF007AFF), width: 1),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor, width: 1),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 12),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: Theme.of(context).cardColor,
                   ),
                 ),
               ),
@@ -585,12 +613,12 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               '직업 선택 필수',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: Theme.of(context).textTheme.titleMedium?.color,
               ),
             ),
             Switch(
@@ -600,7 +628,10 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                   _requireJob = value;
                 });
               },
-              activeColor: const Color(0xFF007AFF),
+              activeColor: Colors.green,
+              activeTrackColor: Colors.green.withOpacity(0.3),
+              inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
+              inactiveTrackColor: Theme.of(context).dividerColor,
             ),
           ],
         ),
@@ -615,12 +646,12 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               '직업 제한',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: Theme.of(context).textTheme.titleMedium?.color,
               ),
             ),
             Switch(
@@ -630,7 +661,10 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                   _requireJobCategory = value;
                 });
               },
-              activeColor: const Color(0xFF007AFF),
+              activeColor: Colors.green,
+              activeTrackColor: Colors.green.withOpacity(0.3),
+              inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
+              inactiveTrackColor: Theme.of(context).dividerColor,
             ),
           ],
         ),
@@ -674,10 +708,10 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF666666),
+            color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -686,22 +720,23 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).cardColor,
           ),
-          style: const TextStyle(color: Color(0xFF000000)),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           items: List.generate(5, (index) => index).map((int value) {
             return DropdownMenuItem<int>(
               value: value,
@@ -724,18 +759,20 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
       child: ElevatedButton(
         onPressed: _updateParty,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF007AFF),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF76769A)
+              : Theme.of(context).primaryColor,
           padding: const EdgeInsets.symmetric(vertical: 15),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: const Text(
+        child: Text(
           '파티 수정하기',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onPrimary,
           ),
         ),
       ),
@@ -746,7 +783,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('템플릿 선택'),
+        title: Text('템플릿 선택'),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(

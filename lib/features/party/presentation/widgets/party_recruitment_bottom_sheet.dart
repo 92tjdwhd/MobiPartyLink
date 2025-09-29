@@ -188,7 +188,7 @@ class _PartyRecruitmentBottomSheetState
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).cardColor,
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -293,7 +293,11 @@ class _PartyRecruitmentBottomSheetState
               _requirePower = value;
             });
           },
-          activeColor: Theme.of(context).primaryColor,
+          activeColor: Colors.green,
+          activeThumbColor: Colors.green,
+          activeTrackColor: Colors.green.withOpacity(0.3),
+          inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
+          inactiveTrackColor: Theme.of(context).dividerColor,
         ),
       ],
     );
@@ -320,6 +324,9 @@ class _PartyRecruitmentBottomSheetState
             });
           },
           activeColor: Theme.of(context).primaryColor,
+          activeTrackColor: Theme.of(context).primaryColor.withOpacity(0.8),
+          inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
+          inactiveTrackColor: Theme.of(context).dividerColor,
         ),
       ],
     );
@@ -458,12 +465,12 @@ class _PartyRecruitmentBottomSheetState
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide:
-                    const BorderSide(color: Color(0xFF007AFF), width: 1),
+                    BorderSide(color: Theme.of(context).primaryColor, width: 1),
               ),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: Theme.of(context).cardColor,
             ),
             style: TextStyle(
                 color: Theme.of(context)
@@ -501,12 +508,12 @@ class _PartyRecruitmentBottomSheetState
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide:
-                    const BorderSide(color: Color(0xFF007AFF), width: 1),
+                    BorderSide(color: Theme.of(context).primaryColor, width: 1),
               ),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: Theme.of(context).cardColor,
             ),
             style: TextStyle(
                 color: Theme.of(context)
@@ -546,6 +553,9 @@ class _PartyRecruitmentBottomSheetState
             });
           },
           activeColor: Theme.of(context).primaryColor,
+          activeTrackColor: Theme.of(context).primaryColor.withOpacity(0.8),
+          inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
+          inactiveTrackColor: Theme.of(context).dividerColor,
         ),
       ],
     );
@@ -632,7 +642,9 @@ class _PartyRecruitmentBottomSheetState
       child: ElevatedButton(
         onPressed: _createParty,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF76769A)
+              : Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(

@@ -200,29 +200,34 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
         const SizedBox(height: 8),
         TextFormField(
           controller: _nicknameController,
-          style: const TextStyle(color: Color(0xFF000000)),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           decoration: InputDecoration(
             hintText: '닉네임을 입력하세요',
-            hintStyle: const TextStyle(
-              color: Color(0xFF999999),
+            hintStyle: TextStyle(
+              color: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.color
+                  ?.withOpacity(0.6),
               fontSize: 14,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).cardColor,
           ),
           validator: isRequired
               ? (value) {
@@ -273,24 +278,24 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE0E0E0)),
+              border: Border.all(color: Theme.of(context).dividerColor),
               borderRadius: BorderRadius.circular(8),
-              color: Theme.of(context).scaffoldBackgroundColor,
+              color: Theme.of(context).cardColor,
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     _selectedJob,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF000000),
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_drop_down,
-                  color: Color(0xFF666666),
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ],
             ),
@@ -333,29 +338,34 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
         TextFormField(
           controller: _powerController,
           keyboardType: TextInputType.number,
-          style: const TextStyle(color: Color(0xFF000000)),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           decoration: InputDecoration(
             hintText: '투력을 입력하세요',
-            hintStyle: const TextStyle(
-              color: Color(0xFF999999),
+            hintStyle: TextStyle(
+              color: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.color
+                  ?.withOpacity(0.6),
               fontSize: 14,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF007AFF), width: 1),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: Theme.of(context).cardColor,
           ),
           validator: isRequired
               ? (value) {
@@ -378,10 +388,10 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFE9ECEF),
+          color: Theme.of(context).dividerColor,
           width: 1,
         ),
       ),
@@ -391,12 +401,12 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '프로필 저장하기',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF000000),
+                    color: Theme.of(context).textTheme.titleMedium?.color,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -417,7 +427,10 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
                 _saveProfile = value;
               });
             },
-            activeColor: const Color(0xFF007AFF),
+            activeColor: Colors.green,
+            activeTrackColor: Colors.green.withOpacity(0.3),
+            inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
+            inactiveTrackColor: Theme.of(context).dividerColor,
           ),
         ],
       ),
@@ -435,8 +448,10 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
       child: ElevatedButton(
         onPressed: isDisabled ? null : _joinParty,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF007AFF),
-          foregroundColor: Colors.white,
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF76769A)
+              : Theme.of(context).primaryColor,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -448,7 +463,8 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.onPrimary),
                 ),
               )
             : Text(
@@ -456,7 +472,9 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: isDisabled ? Colors.grey[400] : Colors.white,
+                  color: isDisabled
+                      ? Colors.grey[400]
+                      : Theme.of(context).colorScheme.onPrimary,
                 ),
               ),
       ),

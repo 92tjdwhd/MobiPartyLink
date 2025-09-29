@@ -9,6 +9,7 @@ part 'user_profile_model.g.dart';
 class UserProfileModel with _$UserProfileModel {
   const factory UserProfileModel({
     required String id,
+    @JsonKey(name: 'user_id') required String userId,
     required String nickname,
     @JsonKey(name: 'job_id') String? jobId, // job -> jobId로 변경
     int? power,
@@ -22,6 +23,7 @@ class UserProfileModel with _$UserProfileModel {
   factory UserProfileModel.fromEntity(UserProfileEntity entity) =>
       UserProfileModel(
         id: entity.id,
+        userId: entity.userId,
         nickname: entity.nickname,
         jobId: entity.jobId, // job -> jobId로 변경
         power: entity.power,
@@ -33,6 +35,7 @@ class UserProfileModel with _$UserProfileModel {
 extension UserProfileModelX on UserProfileModel {
   UserProfileEntity toEntity() => UserProfileEntity(
         id: id,
+        userId: userId,
         nickname: nickname,
         jobId: jobId, // job -> jobId로 변경
         power: power,

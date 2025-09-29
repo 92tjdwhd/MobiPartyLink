@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/profile/presentation/widgets/profile_setup_bottom_sheet.dart';
+import 'package:mobi_party_link/features/profile/presentation/screens/profile_management_screen.dart';
+import 'package:mobi_party_link/features/profile/presentation/providers/profile_provider.dart';
 import 'package:mobi_party_link/features/notification/presentation/screens/notification_settings_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -164,7 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.person_outline,
               title: '프로필 설정',
               subtitle: '닉네임, 직업, 전투력 수정',
-              onTap: () => _showProfileSetup(context),
+              onTap: () => _navigateToProfileSettings(context),
             ),
           ]),
 
@@ -238,7 +240,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF666666),
+        color: Theme.of(context).textTheme.bodyMedium?.color,
         letterSpacing: -0.3,
       ),
     );
@@ -348,13 +350,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  // 프로필 설정 네비게이션
+  void _navigateToProfileSettings(BuildContext context) async {
+    final hasProfile = await ref.read(hasProfileProvider.future);
+
+    if (hasProfile) {
+      // 프로필이 있으면 프로필 관리 화면으로 이동
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const ProfileManagementScreen(),
+        ),
+      );
+    } else {
+      // 프로필이 없으면 프로필 설정 바텀시트 표시
+      _showProfileSetup(context);
+    }
+  }
+
   // 프로필 설정 바텀시트 표시
   void _showProfileSetup(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const ProfileSetupBottomSheet(),
+      builder: (context) => ProfileSetupBottomSheet(
+        onProfileSaved: () {
+          // 프로필 저장 후 프로필 관리 화면으로 이동
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const ProfileManagementScreen(),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -380,7 +408,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               '앱 사용 중 문제나 건의사항이 있으시면\n아래 방법으로 연락해 주세요.',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[700],
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 height: 1.5,
               ),
             ),
@@ -429,7 +457,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFF4A90E2), size: 20),
+            Icon(icon, color: Theme.of(context).primaryColor, size: 20),
             SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -8,6 +8,7 @@ part 'permission_provider.freezed.dart';
 class PermissionState with _$PermissionState {
   const factory PermissionState({
     @Default(false) bool isNotificationGranted,
+    @Default(false) bool isExactAlarmGranted,
     @Default(false) bool areAllPermissionsGranted,
   }) = _PermissionState;
 }
@@ -22,16 +23,23 @@ class PermissionNotifier extends StateNotifier<PermissionState> {
   Future<void> checkPermissions() async {
     final isNotificationGranted =
         await _permissionService.checkNotificationPermission();
+    final isExactAlarmGranted =
+        await _permissionService.checkExactAlarmPermission();
+
     state = state.copyWith(
       isNotificationGranted: isNotificationGranted,
-      areAllPermissionsGranted: isNotificationGranted, // 현재는 알림만 체크
+      isExactAlarmGranted: isExactAlarmGranted,
+      areAllPermissionsGranted: isNotificationGranted && isExactAlarmGranted,
     );
   }
 
   Future<bool> requestPermissions() async {
-    final granted = await _permissionService.requestNotificationPermission();
+    final notificationGranted =
+        await _permissionService.requestNotificationPermission();
+    final exactAlarmGranted =
+        await _permissionService.requestExactAlarmPermission();
     await checkPermissions(); // 요청 후 상태 업데이트
-    return granted;
+    return notificationGranted && exactAlarmGranted;
   }
 }
 

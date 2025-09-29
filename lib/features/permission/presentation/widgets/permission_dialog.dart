@@ -32,9 +32,18 @@ Future<bool?> showPermissionDialog(BuildContext context) async {
             ),
             const SizedBox(height: 16),
             Text(
-              '알림을 받으려면 권한 허용이 필요합니다.',
+              '정확한 시간에 알림을 받으려면 다음 권한들이 필요합니다:',
               style: TextStyle(
                 fontSize: 15,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '• 알림 권한\n• 정확한 알림 예약 권한',
+              style: TextStyle(
+                fontSize: 14,
                 color: Theme.of(context).textTheme.bodyMedium?.color,
                 height: 1.4,
               ),
@@ -57,11 +66,19 @@ Future<bool?> showPermissionDialog(BuildContext context) async {
           ),
           ElevatedButton(
             onPressed: () async {
-              // 권한 요청
-              final status = await Permission.notification.request();
-              if (status.isGranted) {
+              // 알림 권한 요청
+              final notificationStatus =
+                  await Permission.notification.request();
+
+              // 정확한 알림 예약 권한 요청 (Android 12+)
+              final exactAlarmStatus =
+                  await Permission.scheduleExactAlarm.request();
+
+              // 두 권한 모두 허용된 경우에만 성공
+              if (notificationStatus.isGranted && exactAlarmStatus.isGranted) {
                 dialogContext.pop(true); // 권한 허용 시 true 반환
-              } else if (status.isPermanentlyDenied) {
+              } else if (notificationStatus.isPermanentlyDenied ||
+                  exactAlarmStatus.isPermanentlyDenied) {
                 // 영구적으로 거부된 경우 설정으로 이동 유도
                 openAppSettings();
                 dialogContext.pop(false); // 설정으로 이동했으므로 false 반환
@@ -70,7 +87,9 @@ Future<bool?> showPermissionDialog(BuildContext context) async {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF76769A)
+                  : Theme.of(context).primaryColor,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),

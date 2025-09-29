@@ -33,4 +33,24 @@ class PermissionService {
     }
     return false;
   }
+
+  /// 정확한 알림 예약 권한 상태 체크
+  Future<bool> checkExactAlarmPermission() async {
+    if (kIsWeb) return true;
+    if (Platform.isAndroid) {
+      final status = await Permission.scheduleExactAlarm.status;
+      return status.isGranted;
+    }
+    return true; // iOS는 항상 허용
+  }
+
+  /// 정확한 알림 예약 권한 요청
+  Future<bool> requestExactAlarmPermission() async {
+    if (kIsWeb) return true;
+    if (Platform.isAndroid) {
+      final status = await Permission.scheduleExactAlarm.request();
+      return status.isGranted;
+    }
+    return true; // iOS는 항상 허용
+  }
 }

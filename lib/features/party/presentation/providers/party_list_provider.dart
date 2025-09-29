@@ -1,32 +1,37 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
 import 'package:mobi_party_link/core/di/injection.dart';
+import 'package:mobi_party_link/features/notification/presentation/providers/party_notification_provider.dart';
+import 'package:mobi_party_link/core/data/mock_party_data.dart';
 
 // 내가 만든 파티 리스트 Provider
 final myPartiesProvider = FutureProvider<List<PartyEntity>>((ref) async {
   print('myPartiesProvider 호출됨');
-  final getMyParties = ref.read(getMyPartiesProviderProvider);
-  final result = await getMyParties();
-  return result.fold(
-    (failure) {
-      print('내가 만든 파티 로드 실패: $failure');
-      return [];
-    },
-    (parties) {
-      print('내가 만든 파티 로드 성공: ${parties.length}개');
-      return parties;
-    },
-  );
+
+  // 서버가 없으므로 Mock 데이터 사용
+  final parties = MockPartyData.getMyParties();
+  print('내가 만든 파티 로드 성공: ${parties.length}개');
+
+  // 파티 목록 로드 후 알림 동기화
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _syncPartyNotifications(ref, parties, []);
+  });
+
+  return parties;
 });
 
 // 참가한 파티 리스트 Provider
 final joinedPartiesProvider = FutureProvider<List<PartyEntity>>((ref) async {
-  final getJoinedParties = ref.read(getJoinedPartiesProviderProvider);
-  final result = await getJoinedParties();
-  return result.fold(
-    (failure) => [],
-    (parties) => parties,
-  );
+  // 서버가 없으므로 Mock 데이터 사용
+  final parties = MockPartyData.getJoinedParties();
+
+  // 참가한 파티 목록 로드 후 알림 동기화
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _syncPartyNotifications(ref, [], parties);
+  });
+
+  return parties;
 });
 
 // 파티 리스트 새로고침 Provider
@@ -39,4 +44,26 @@ void refreshPartyList(WidgetRef ref) {
   ref.invalidate(myPartiesProvider);
   ref.invalidate(joinedPartiesProvider);
   print('Provider 무효화 완료');
+}
+
+// 파티 알림 동기화 함수
+Future<void> _syncPartyNotifications(
+  FutureProviderRef<List<PartyEntity>> ref,
+  List<PartyEntity> myParties,
+  List<PartyEntity> joinedParties,
+) async {
+  try {
+    print(
+        '파티 알림 동기화 시작: 내 파티 ${myParties.length}개, 참가 파티 ${joinedParties.length}개');
+
+    // 파티 알림 Provider에 전체 파티 목록 전달하여 동기화
+    await ref.read(partyNotificationProvider.notifier).syncWithServerParties(
+          myParties,
+          joinedParties,
+        );
+
+    print('파티 알림 동기화 완료');
+  } catch (e) {
+    print('파티 알림 동기화 실패: $e');
+  }
 }

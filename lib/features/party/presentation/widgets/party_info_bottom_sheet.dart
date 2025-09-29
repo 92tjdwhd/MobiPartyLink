@@ -63,7 +63,7 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
       width: 40,
       margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: Theme.of(context).dividerColor,
         borderRadius: BorderRadius.circular(2.5),
       ),
     );
@@ -75,16 +75,17 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             '파티 정보',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: Color(0xFF666666)),
+            icon: Icon(Icons.close,
+                color: Theme.of(context).textTheme.bodyMedium?.color),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -111,19 +112,19 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               '파티 멤버',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
             Text(
               '${widget.party.members.length}/${widget.party.maxMembers}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF666666),
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -142,15 +143,17 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isLeader ? const Color(0xFF007AFF) : const Color(0xFFE5E5E5),
+          color: isLeader
+              ? Theme.of(context).primaryColor
+              : Theme.of(context).dividerColor,
           width: isLeader ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Theme.of(context).shadowColor,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -162,8 +165,9 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color:
-                  isLeader ? const Color(0xFF007AFF) : const Color(0xFF6B21A8),
+              color: isLeader
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).colorScheme.secondary,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
@@ -181,10 +185,10 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
                   children: [
                     Text(
                       member.nickname,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
+                        color: Theme.of(context).textTheme.titleLarge?.color,
                       ),
                     ),
                     if (isLeader) ...[
@@ -193,7 +197,7 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF007AFF),
+                          color: Theme.of(context).primaryColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
@@ -211,17 +215,17 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
                 const SizedBox(height: 4),
                 Text(
                   '${PartyUtils.getJobText(member.jobId)} • 투력 ${member.power}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF666666),
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '참여일: ${_formatDateTime(member.joinedAt)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF999999),
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
               ],

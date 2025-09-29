@@ -10,15 +10,15 @@ import '../datasources/counter_remote_datasource.dart';
 import '../models/counter_model.dart';
 
 class CounterRepositoryImpl implements CounterRepository {
-  final CounterLocalDataSource localDataSource;
-  final CounterRemoteDataSource remoteDataSource;
-  final NetworkInfo networkInfo;
 
   CounterRepositoryImpl({
     required this.localDataSource,
     required this.remoteDataSource,
     required this.networkInfo,
   });
+  final CounterLocalDataSource localDataSource;
+  final CounterRemoteDataSource remoteDataSource;
+  final NetworkInfo networkInfo;
 
   @override
   Future<Either<Failure, CounterEntity>> getCounter() async {

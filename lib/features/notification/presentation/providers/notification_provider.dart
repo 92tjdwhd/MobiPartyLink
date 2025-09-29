@@ -34,9 +34,4 @@ class NotificationNotifier extends _$NotificationNotifier {
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     return await _notificationService.getPendingNotifications();
   }
-
-  /// FCM 토큰 가져오기
-  Future<String?> getFCMToken() async {
-    return await _notificationService.getFCMToken();
-  }
 }
