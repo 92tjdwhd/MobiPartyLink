@@ -5,6 +5,7 @@ import 'package:mobi_party_link/core/constants/party_templates.dart';
 import 'package:mobi_party_link/core/services/profile_service.dart';
 import 'package:mobi_party_link/features/profile/presentation/widgets/profile_setup_bottom_sheet.dart';
 import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/party_template_provider.dart';
 
 class PartyRecruitmentBottomSheet extends ConsumerStatefulWidget {
   const PartyRecruitmentBottomSheet({super.key});
@@ -805,23 +806,37 @@ class _PartyRecruitmentBottomSheetState
   }
 
   Future<void> _selectTemplate() async {
-    final Map<String, dynamic>? selectedTemplate =
-        await showDialog<Map<String, dynamic>>(
+    // 로컬 저장소에서 템플릿 목록 가져오기
+    final templates = await ref.read(localTemplatesProvider.future);
+
+    if (!mounted) return;
+
+    if (templates.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('템플릿 데이터가 없습니다. 설정에서 데이터 동기화를 진행해주세요.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final template = await showDialog<dynamic>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('템플릿 선택'),
+        title: const Text('템플릿 선택'),
         content: SizedBox(
           width: double.maxFinite,
           height: 400,
           child: ListView.builder(
-            itemCount: PartyTemplates.templates.length,
+            itemCount: templates.length,
             itemBuilder: (context, index) {
-              final template = PartyTemplates.templates[index];
+              final t = templates[index];
               return ListTile(
-                title: Text('${template['name']} (${template['difficulty']})'),
+                title: Text('${t.name} (${t.difficulty})'),
                 subtitle: Text(
-                    '${template['category']} • ${template['maxMembers']}명 • 투력 ${template['minPower']}-${template['maxPower']}'),
-                onTap: () => Navigator.pop(context, template),
+                    '${t.category} • ${t.maxMembers}명 • 투력 ${t.minPower}-${t.maxPower}'),
+                onTap: () => Navigator.pop(context, t),
               );
             },
           ),
@@ -829,24 +844,23 @@ class _PartyRecruitmentBottomSheetState
       ),
     );
 
-    if (selectedTemplate != null) {
+    if (template != null) {
       setState(() {
-        _selectedContentType =
-            '${selectedTemplate['name']} (${selectedTemplate['difficulty']})';
-        _selectedCategory = selectedTemplate['category'];
-        _selectedDifficulty = selectedTemplate['difficulty'];
-        _maxMembers = selectedTemplate['maxMembers'];
-        _requireJob = selectedTemplate['requireJob'];
-        _requirePower = selectedTemplate['requirePower'];
-        _requireJobCategory = selectedTemplate['requireJobCategory'];
-        _tankLimit = selectedTemplate['tankLimit'];
-        _healerLimit = selectedTemplate['healerLimit'];
-        _dpsLimit = selectedTemplate['dpsLimit'];
+        _selectedContentType = '${template.name} (${template.difficulty})';
+        _selectedCategory = template.category;
+        _selectedDifficulty = template.difficulty;
+        _maxMembers = template.maxMembers;
+        _requireJob = template.requireJob;
+        _requirePower = template.requirePower;
+        _requireJobCategory = template.requireJobCategory ?? false;
+        _tankLimit = template.tankLimit ?? 0;
+        _healerLimit = template.healerLimit ?? 0;
+        _dpsLimit = template.dpsLimit ?? 0;
 
         // 투력 필드에 기본값 설정
         if (_requirePower) {
-          _minPowerController.text = selectedTemplate['minPower'].toString();
-          _maxPowerController.text = selectedTemplate['maxPower'].toString();
+          _minPowerController.text = template.minPower.toString();
+          _maxPowerController.text = template.maxPower.toString();
         }
       });
     }

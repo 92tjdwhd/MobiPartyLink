@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/core/services/profile_service.dart';
 import 'package:mobi_party_link/features/profile/presentation/providers/profile_provider.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/job_provider.dart';
 
 class ProfileSetupBottomSheet extends ConsumerStatefulWidget {
   final VoidCallback? onProfileSaved;
@@ -22,7 +23,7 @@ class _ProfileSetupBottomSheetState
   final TextEditingController _nicknameController = TextEditingController();
   final TextEditingController _powerController = TextEditingController();
 
-  String _selectedJob = '전사';
+  String _selectedJob = '전사'; // 기본값
   bool _isLoading = false;
 
   @override
@@ -301,38 +302,39 @@ class _ProfileSetupBottomSheetState
   }
 
   Future<void> _selectJob() async {
+    // 로컬 저장소에서 직업 목록 가져오기
+    final jobNames = await ref.read(jobNamesProvider.future);
+
+    if (jobNames.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('직업 데이터가 없습니다. 설정에서 데이터 동기화를 진행해주세요.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
     final String? selectedJob = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('직업 선택'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            '전사',
-            '수도사',
-            '빙결술사',
-            '대검전사',
-            '검술사',
-            '마법사',
-            '화염술사',
-            '전격술사',
-            '궁수',
-            '석궁사수',
-            '장궁병',
-            '음유시인',
-            '댄서',
-            '악사',
-            '도적',
-            '격투가',
-            '듀얼블레이드',
-            '힐러',
-            '사제',
-          ]
-              .map((job) => ListTile(
-                    title: Text(job),
-                    onTap: () => Navigator.pop(context, job),
-                  ))
-              .toList(),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400, // 고정 높이 설정
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: jobNames
+                  .map((job) => ListTile(
+                        title: Text(job),
+                        onTap: () => Navigator.pop(context, job),
+                      ))
+                  .toList(),
+            ),
+          ),
         ),
       ),
     );

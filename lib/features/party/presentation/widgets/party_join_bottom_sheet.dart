@@ -38,15 +38,28 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
   }
 
   Future<void> _loadExistingProfile() async {
-    final existingProfile = await ProfileService.getProfile();
-    if (existingProfile != null) {
+    // 메인 프로필을 우선적으로 로드
+    final mainProfile = await ProfileService.getMainProfile();
+    if (mainProfile != null) {
       setState(() {
-        _nicknameController.text = existingProfile.nickname;
-        _selectedJob = existingProfile.job;
-        _powerController.text = existingProfile.power.toString();
+        _nicknameController.text = mainProfile.nickname;
+        _selectedJob = mainProfile.job;
+        _powerController.text = mainProfile.power.toString();
         _hasExistingProfile = true;
-        _saveProfile = false; // 기존 프로필이 있으면 저장 플래그 비활성화
+        _saveProfile = false; // 메인 프로필이 있으면 저장 플래그 비활성화
       });
+    } else {
+      // 메인 프로필이 없으면 기존 프로필 로드
+      final existingProfile = await ProfileService.getProfile();
+      if (existingProfile != null) {
+        setState(() {
+          _nicknameController.text = existingProfile.nickname;
+          _selectedJob = existingProfile.job;
+          _powerController.text = existingProfile.power.toString();
+          _hasExistingProfile = true;
+          _saveProfile = false; // 기존 프로필이 있으면 저장 플래그 비활성화
+        });
+      }
     }
   }
 

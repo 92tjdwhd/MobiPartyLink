@@ -16,6 +16,9 @@ import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart
 import 'package:mobi_party_link/features/permission/presentation/providers/permission_provider.dart';
 import 'package:mobi_party_link/features/permission/presentation/widgets/permission_dialog.dart';
 import 'package:mobi_party_link/features/settings/presentation/screens/settings_screen.dart';
+import 'package:mobi_party_link/features/profile/presentation/screens/profile_management_screen.dart';
+import 'package:mobi_party_link/core/services/data_sync_service.dart';
+import 'package:mobi_party_link/core/di/injection.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -33,11 +36,38 @@ class _MainScreenState extends ConsumerState<MainScreen>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
 
-    // 권한 체크 및 요청
+    // 앱 초기화
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndRequestPermissions();
-      _initializePartyNotifications();
+      _initializeApp();
     });
+  }
+
+  /// 앱 초기화
+  Future<void> _initializeApp() async {
+    // 1. FCM 플래그 기반 데이터 동기화 (백그라운드)
+    _syncDataWithFcm();
+
+    // 2. 권한 체크
+    await _checkAndRequestPermissions();
+
+    // 3. 파티 알림 초기화
+    await _initializePartyNotifications();
+  }
+
+  /// FCM 플래그 기반 데이터 동기화
+  Future<void> _syncDataWithFcm() async {
+    try {
+      final dataSyncService = DataSyncService(
+        jobRepository: ref.read(jobRepositoryProvider),
+        templateRepository: ref.read(partyTemplateRepositoryProvider),
+      );
+
+      // FCM 플래그만 확인! (서버 요청 X, 플래그 있을 때만 다운로드)
+      await dataSyncService.fcmSmartSyncJobs();
+      await dataSyncService.fcmSmartSyncTemplates();
+    } catch (e) {
+      print('❌ FCM 기반 동기화 에러: $e');
+    }
   }
 
   /// 파티 알림 초기화
@@ -243,78 +273,81 @@ class _MainScreenState extends ConsumerState<MainScreen>
   }
 
   Widget _buildExistingProfile(WidgetRef ref) {
-    final profileAsync = ref.watch(profileDataProvider);
+    final mainProfileAsync = ref.watch(mainProfileProvider);
 
-    return profileAsync.when(
+    return mainProfileAsync.when(
       data: (profile) {
         if (profile == null) {
           return _buildProfileSetup();
         }
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Theme.of(context).dividerColor,
-              width: 1,
+        return GestureDetector(
+          onTap: () => _navigateToProfileManagement(),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Theme.of(context).dividerColor,
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF76769A)
-                      : Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor,
-                    width: 1,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.person_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    profile.nickname,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).textTheme.titleLarge?.color,
-                      letterSpacing: -0.2,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF76769A)
+                        : Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Theme.of(context).dividerColor,
+                      width: 1,
                     ),
                   ),
-                  Text(
-                    '${profile.job} • ${profile.power}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                      letterSpacing: -0.1,
-                    ),
+                  child: const Icon(
+                    Icons.person_rounded,
+                    color: Colors.white,
+                    size: 18,
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      profile.nickname,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).textTheme.titleLarge?.color,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    Text(
+                      '${profile.job} • ${profile.power}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                        letterSpacing: -0.1,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -760,6 +793,14 @@ class _MainScreenState extends ConsumerState<MainScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const PartyRecruitmentBottomSheet(),
+    );
+  }
+
+  void _navigateToProfileManagement() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const ProfileManagementScreen(),
+      ),
     );
   }
 }

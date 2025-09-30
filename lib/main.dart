@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'core/di/injection.dart';
 import 'core/network/supabase_client.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/fcm_service.dart';
+import 'firebase_options.dart';
 import 'features/notification/presentation/providers/notification_provider.dart';
 
 void main() async {
@@ -52,8 +55,12 @@ void main() async {
     }
   }
 
-  // TODO: Firebase 초기화 (FCM 설정 완료 후 활성화)
-  // await Firebase.initializeApp();
+  // Firebase 초기화 (FCM)
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await FcmService.initialize();
+  print('✅ Firebase & FCM 초기화 완료');
 
   // Supabase 초기화
   await AppSupabaseClient.initialize();

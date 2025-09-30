@@ -10,6 +10,7 @@ abstract class JobRemoteDataSource {
   Future<List<JobEntity>> getJobs();
   Future<List<JobEntity>> getJobsByCategory(String categoryId);
   Future<JobEntity> getJobById(String jobId);
+  Future<int> getJobsVersion();
 }
 
 class JobRemoteDataSourceImpl implements JobRemoteDataSource {
@@ -87,6 +88,21 @@ class JobRemoteDataSourceImpl implements JobRemoteDataSource {
       throw ServerException(message: e.message);
     } catch (e) {
       throw ServerException(message: '직업 정보를 가져오는데 실패했습니다: $e');
+    }
+  }
+
+  @override
+  Future<int> getJobsVersion() async {
+    try {
+      final response = await _supabaseClient
+          .from('data_versions')
+          .select('version')
+          .eq('data_type', 'jobs')
+          .single();
+
+      return response['version'] as int;
+    } catch (e) {
+      throw ServerException(message: '직업 버전 정보를 가져오는데 실패했습니다: $e');
     }
   }
 }

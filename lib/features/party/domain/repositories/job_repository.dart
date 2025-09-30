@@ -20,4 +20,7 @@ abstract class JobRepository {
   /// 직업 카테고리별로 그룹화된 직업들을 가져옵니다
   Future<Either<Failure, Map<String, List<JobEntity>>>>
       getJobsGroupedByCategory();
+
+  /// 직업 데이터의 현재 버전을 가져옵니다
+  Future<Either<Failure, int>> getJobsVersion();
 }

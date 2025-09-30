@@ -38,6 +38,10 @@ import '../../features/party/domain/usecases/get_jobs.dart';
 import '../../features/party/domain/usecases/get_jobs_by_category.dart';
 import '../../features/party/domain/usecases/get_job_by_id.dart';
 import '../../features/party/domain/usecases/get_jobs_grouped_by_category.dart';
+import '../../features/party/data/datasources/party_template_server_datasource.dart';
+import '../../features/party/data/datasources/party_template_local_datasource.dart';
+import '../../features/party/data/repositories/party_template_repository_impl.dart';
+import '../../features/party/domain/repositories/party_template_repository.dart';
 
 part 'injection.g.dart';
 
@@ -251,6 +255,34 @@ JobRemoteDataSource jobRemoteDataSource(JobRemoteDataSourceRef ref) {
 JobRepository jobRepository(JobRepositoryRef ref) {
   return JobRepositoryImpl(
     remoteDataSource: ref.watch(jobRemoteDataSourceProvider),
+    networkInfo: ref.watch(networkInfoProvider),
+  );
+}
+
+// Party Template Data Sources
+@riverpod
+PartyTemplateServerDataSource partyTemplateServerDataSource(
+    PartyTemplateServerDataSourceRef ref) {
+  return PartyTemplateServerDataSourceImpl(
+    supabaseClient: ref.watch(supabaseClientProvider),
+  );
+}
+
+@riverpod
+PartyTemplateLocalDataSource partyTemplateLocalDataSource(
+    PartyTemplateLocalDataSourceRef ref) {
+  return PartyTemplateLocalDataSourceImpl(
+    sharedPreferences: ref.watch(sharedPreferencesProvider),
+  );
+}
+
+// Party Template Repository
+@riverpod
+PartyTemplateRepository partyTemplateRepository(
+    PartyTemplateRepositoryRef ref) {
+  return PartyTemplateRepositoryImpl(
+    serverDataSource: ref.watch(partyTemplateServerDataSourceProvider),
+    localDataSource: ref.watch(partyTemplateLocalDataSourceProvider),
     networkInfo: ref.watch(networkInfoProvider),
   );
 }

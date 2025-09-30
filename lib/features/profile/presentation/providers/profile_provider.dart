@@ -26,6 +26,20 @@ final profileListProvider = FutureProvider<List<UserProfile>>((ref) async {
   return await ProfileService.getProfileList();
 });
 
+// 메인 프로필 ID Provider
+final mainProfileIdProvider = FutureProvider<String?>((ref) async {
+  // 프로필 새로고침 트리거를 구독
+  ref.watch(profileRefreshProvider);
+  return await ProfileService.getMainProfileId();
+});
+
+// 메인 프로필 객체 Provider
+final mainProfileProvider = FutureProvider<UserProfile?>((ref) async {
+  // 프로필 새로고침 트리거를 구독
+  ref.watch(profileRefreshProvider);
+  return await ProfileService.getMainProfile();
+});
+
 // 프로필 새로고침 함수
 void refreshProfile(WidgetRef ref) {
   ref.read(profileRefreshProvider.notifier).state++;

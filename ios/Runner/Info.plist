@@ -52,13 +52,14 @@
 	
 	<!-- 알림 권한 설명 -->
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>파티 시작 알림을 받기 위해 알림 권한이 필요합니다.</string>
+	<string>파티 알림 및 콘텐츠 업데이트 알림을 받기 위해 권한이 필요합니다.</string>
 	
-	<!-- 백그라운드 모드 -->
+	<!-- 백그라운드 모드 (FCM 포함) -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>background-processing</string>
 		<string>background-fetch</string>
+		<string>remote-notification</string>
 	</array>
 </dict>
 </plist>

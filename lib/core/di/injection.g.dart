@@ -385,6 +385,60 @@ final jobRepositoryProvider = AutoDisposeProvider<JobRepository>.internal(
 );
 
 typedef JobRepositoryRef = AutoDisposeProviderRef<JobRepository>;
+String _$partyTemplateServerDataSourceHash() =>
+    r'9cc4ff22f314fb7a00d19aeb250b0debf4cb978e';
+
+/// See also [partyTemplateServerDataSource].
+@ProviderFor(partyTemplateServerDataSource)
+final partyTemplateServerDataSourceProvider =
+    AutoDisposeProvider<PartyTemplateServerDataSource>.internal(
+  partyTemplateServerDataSource,
+  name: r'partyTemplateServerDataSourceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$partyTemplateServerDataSourceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef PartyTemplateServerDataSourceRef
+    = AutoDisposeProviderRef<PartyTemplateServerDataSource>;
+String _$partyTemplateLocalDataSourceHash() =>
+    r'e83cb8693502d5129ba5bbd59cd9eef33f7c6fef';
+
+/// See also [partyTemplateLocalDataSource].
+@ProviderFor(partyTemplateLocalDataSource)
+final partyTemplateLocalDataSourceProvider =
+    AutoDisposeProvider<PartyTemplateLocalDataSource>.internal(
+  partyTemplateLocalDataSource,
+  name: r'partyTemplateLocalDataSourceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$partyTemplateLocalDataSourceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef PartyTemplateLocalDataSourceRef
+    = AutoDisposeProviderRef<PartyTemplateLocalDataSource>;
+String _$partyTemplateRepositoryHash() =>
+    r'127fcafa808b8d4431523fb3a7c474bcfd05c40e';
+
+/// See also [partyTemplateRepository].
+@ProviderFor(partyTemplateRepository)
+final partyTemplateRepositoryProvider =
+    AutoDisposeProvider<PartyTemplateRepository>.internal(
+  partyTemplateRepository,
+  name: r'partyTemplateRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$partyTemplateRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef PartyTemplateRepositoryRef
+    = AutoDisposeProviderRef<PartyTemplateRepository>;
 String _$getJobCategoriesProviderHash() =>
     r'6fde695c037e9f656ffef9e93245082583587bbe';
 

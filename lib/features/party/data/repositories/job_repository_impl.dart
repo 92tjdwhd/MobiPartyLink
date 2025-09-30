@@ -103,4 +103,20 @@ class JobRepositoryImpl implements JobRepository {
       return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
+
+  @override
+  Future<Either<Failure, int>> getJobsVersion() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final version = await remoteDataSource.getJobsVersion();
+        return Right(version);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message, code: e.code));
+      } catch (e) {
+        return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
+      }
+    } else {
+      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+    }
+  }
 }

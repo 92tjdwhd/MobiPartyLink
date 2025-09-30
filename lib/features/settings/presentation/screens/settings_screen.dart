@@ -5,6 +5,7 @@ import 'package:mobi_party_link/features/profile/presentation/widgets/profile_se
 import 'package:mobi_party_link/features/profile/presentation/screens/profile_management_screen.dart';
 import 'package:mobi_party_link/features/profile/presentation/providers/profile_provider.dart';
 import 'package:mobi_party_link/features/notification/presentation/screens/notification_settings_screen.dart';
+import 'package:mobi_party_link/features/settings/presentation/screens/data_sync_test_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -167,6 +168,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: '프로필 설정',
               subtitle: '닉네임, 직업, 전투력 수정',
               onTap: () => _navigateToProfileSettings(context),
+            ),
+          ]),
+
+          SizedBox(height: 24),
+
+          // 개발자 섹션
+          _buildSectionHeader('개발자'),
+          SizedBox(height: 12),
+          _buildSettingsCard([
+            _buildSettingsItem(
+              icon: Icons.cloud_sync,
+              title: '데이터 동기화 테스트',
+              subtitle: 'Supabase 연동 및 로컬 저장소 테스트',
+              onTap: () => _navigateToDataSyncTest(context),
+            ),
+            _buildDivider(),
+            _buildSettingsItem(
+              icon: Icons.notifications_active,
+              title: 'FCM 푸시 테스트',
+              subtitle: 'Edge Function을 통한 FCM 푸시 알림 테스트',
+              onTap: () => _testFcmPush(context),
             ),
           ]),
 
@@ -382,6 +404,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  // 데이터 동기화 테스트 화면으로 이동
+  void _navigateToDataSyncTest(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const DataSyncTestScreen(),
       ),
     );
   }

@@ -9,6 +9,7 @@ import '../models/template_version_model.dart';
 abstract class PartyTemplateServerDataSource {
   Future<TemplateVersionEntity> getTemplateVersion();
   Future<List<PartyTemplateEntity>> getServerTemplates();
+  Future<int> getTemplatesVersion();
 }
 
 class PartyTemplateServerDataSourceImpl
@@ -54,6 +55,21 @@ class PartyTemplateServerDataSourceImpl
           .toList();
     } catch (e) {
       throw ServerException(message: '서버 템플릿을 가져오는데 실패했습니다: $e');
+    }
+  }
+
+  @override
+  Future<int> getTemplatesVersion() async {
+    try {
+      final response = await _supabaseClient
+          .from('data_versions')
+          .select('version')
+          .eq('data_type', 'party_templates')
+          .single();
+
+      return response['version'] as int;
+    } catch (e) {
+      throw ServerException(message: '템플릿 버전 정보를 가져오는데 실패했습니다: $e');
     }
   }
 }

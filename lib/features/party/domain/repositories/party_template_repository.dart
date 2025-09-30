@@ -34,4 +34,7 @@ abstract class PartyTemplateRepository {
     DateTime startTime,
     String creatorId,
   );
+
+  /// 템플릿 데이터의 현재 버전을 가져옵니다
+  Future<Either<Failure, int>> getTemplatesVersion();
 }

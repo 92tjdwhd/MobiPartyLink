@@ -123,7 +123,7 @@ class _ProfileManagementScreenState
     );
   }
 
-  Widget _buildProfileList(List<dynamic> profiles) {
+  Widget _buildProfileList(List<UserProfile> profiles) {
     return Column(
       children: [
         // 헤더
@@ -174,7 +174,7 @@ class _ProfileManagementScreenState
     );
   }
 
-  Widget _buildProfileCard(dynamic profile, int index) {
+  Widget _buildProfileCard(UserProfile profile, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -209,13 +209,48 @@ class _ProfileManagementScreenState
             size: 24,
           ),
         ),
-        title: Text(
-          profile.nickname ?? '프로필 ${index + 1}',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.titleLarge?.color,
-          ),
+        title: Consumer(
+          builder: (context, ref, child) {
+            final mainProfileId = ref.watch(mainProfileIdProvider);
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    profile.nickname ?? '프로필 ${index + 1}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                    ),
+                  ),
+                ),
+                if (mainProfileId.when(
+                  data: (id) => id == profile.id,
+                  loading: () => false,
+                  error: (_, __) => false,
+                ))
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '대표',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
         subtitle: Text(
           '${profile.job ?? '직업 미설정'} • ${profile.power ?? '파워 미설정'}',
@@ -224,26 +259,57 @@ class _ProfileManagementScreenState
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              onPressed: () => _showEditProfileSheet(profile),
-              icon: Icon(
-                Icons.edit_rounded,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-                size: 20,
-              ),
-            ),
-            IconButton(
-              onPressed: () => _showDeleteConfirmDialog(profile),
-              icon: Icon(
-                Icons.delete_rounded,
-                color: Theme.of(context).colorScheme.error,
-                size: 20,
-              ),
-            ),
-          ],
+        trailing: Consumer(
+          builder: (context, ref, child) {
+            final mainProfileId = ref.watch(mainProfileIdProvider);
+
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 대표 프로필 설정 버튼
+                IconButton(
+                  onPressed: () => _setMainProfile(profile),
+                  icon: Icon(
+                    mainProfileId.when(
+                      data: (id) => id == profile.id
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      loading: () => Icons.star_outline_rounded,
+                      error: (_, __) => Icons.star_outline_rounded,
+                    ),
+                    color: mainProfileId.when(
+                      data: (id) => id == profile.id
+                          ? Colors.amber
+                          : Theme.of(context).textTheme.bodyMedium?.color,
+                      loading: () =>
+                          Theme.of(context).textTheme.bodyMedium?.color,
+                      error: (_, __) =>
+                          Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                    size: 20,
+                  ),
+                ),
+                // 수정 버튼
+                IconButton(
+                  onPressed: () => _showEditProfileSheet(profile),
+                  icon: Icon(
+                    Icons.edit_rounded,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                    size: 20,
+                  ),
+                ),
+                // 삭제 버튼
+                IconButton(
+                  onPressed: () => _showDeleteConfirmDialog(profile),
+                  icon: Icon(
+                    Icons.delete_rounded,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 20,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         onTap: () => _showEditProfileSheet(profile),
       ),
@@ -301,7 +367,39 @@ class _ProfileManagementScreenState
     );
   }
 
-  void _showEditProfileSheet(dynamic profile) {
+  void _setMainProfile(UserProfile profile) async {
+    try {
+      final success = await ProfileService.setMainProfile(profile.id);
+
+      if (success) {
+        // 프로필 새로고침
+        refreshProfile(ref);
+
+        // 성공 메시지 표시
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${profile.nickname}을(를) 대표 프로필로 설정했습니다'),
+              backgroundColor: Theme.of(context).primaryColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('대표 프로필 설정에 실패했습니다: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showEditProfileSheet(UserProfile profile) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -310,7 +408,7 @@ class _ProfileManagementScreenState
     );
   }
 
-  void _showDeleteConfirmDialog(dynamic profile) {
+  void _showDeleteConfirmDialog(UserProfile profile) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -355,7 +453,7 @@ class _ProfileManagementScreenState
     );
   }
 
-  void _deleteProfile(dynamic profile) async {
+  void _deleteProfile(UserProfile profile) async {
     try {
       final success = await ProfileService.deleteProfileFromList(profile.id);
 
