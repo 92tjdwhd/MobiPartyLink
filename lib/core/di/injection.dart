@@ -111,6 +111,7 @@ PartyRemoteDataSource partyRemoteDataSource(PartyRemoteDataSourceRef ref) =>
 PartyRepository partyRepository(PartyRepositoryRef ref) => PartyRepositoryImpl(
       remoteDataSource: ref.watch(partyRemoteDataSourceProvider),
       networkInfo: ref.watch(networkInfoProvider),
+      authService: ref.watch(authServiceProvider),
     );
 
 // Use Cases

@@ -181,7 +181,7 @@ final partyRemoteDataSourceProvider =
 
 typedef PartyRemoteDataSourceRef
     = AutoDisposeProviderRef<PartyRemoteDataSource>;
-String _$partyRepositoryHash() => r'6ce67f3813634e67a75c1d9bfa5aa8678b805085';
+String _$partyRepositoryHash() => r'023a42cf0fe324998829a4b7be8817e4ca87d4d7';
 
 /// See also [partyRepository].
 @ProviderFor(partyRepository)
