@@ -65,6 +65,20 @@ final supabaseClientProvider = AutoDisposeProvider<SupabaseClient>.internal(
 );
 
 typedef SupabaseClientRef = AutoDisposeProviderRef<SupabaseClient>;
+String _$authServiceHash() => r'79c641969d1c34e98ec44951d046c6e7c2ef3a44';
+
+/// See also [authService].
+@ProviderFor(authService)
+final authServiceProvider = AutoDisposeProvider<AuthService>.internal(
+  authService,
+  name: r'authServiceProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$authServiceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AuthServiceRef = AutoDisposeProviderRef<AuthService>;
 String _$counterLocalDataSourceHash() =>
     r'329e2d41ed4212365a169895328581ad91b2ef44';
 

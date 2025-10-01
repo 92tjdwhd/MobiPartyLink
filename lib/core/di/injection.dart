@@ -42,6 +42,7 @@ import '../../features/party/data/datasources/party_template_server_datasource.d
 import '../../features/party/data/datasources/party_template_local_datasource.dart';
 import '../../features/party/data/repositories/party_template_repository_impl.dart';
 import '../../features/party/domain/repositories/party_template_repository.dart';
+import '../services/auth_service.dart';
 
 part 'injection.g.dart';
 
@@ -61,6 +62,15 @@ NetworkInfo networkInfo(NetworkInfoRef ref) => NetworkInfoImpl();
 @riverpod
 SupabaseClient supabaseClient(SupabaseClientRef ref) =>
     AppSupabaseClient.instance.client;
+
+// Auth Service
+@riverpod
+AuthService authService(AuthServiceRef ref) {
+  return AuthService(
+    supabaseClient: ref.watch(supabaseClientProvider),
+    prefs: ref.watch(sharedPreferencesProvider),
+  );
+}
 
 // Data Sources
 @riverpod

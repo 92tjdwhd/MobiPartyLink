@@ -12,8 +12,9 @@ class PartyMemberModel with _$PartyMemberModel {
     @JsonKey(name: 'party_id') required String partyId,
     @JsonKey(name: 'user_id') required String userId,
     required String nickname,
-    @JsonKey(name: 'job_id') String? jobId, // job -> jobId로 변경
-    int? power,
+    String? job, // 직업 이름 (로컬 프로필)
+    int? power, // 전투력 (로컬 프로필)
+    @JsonKey(name: 'fcm_token') String? fcmToken, // FCM 토큰
     @JsonKey(name: 'joined_at') required DateTime joinedAt,
   }) = _PartyMemberModel;
 
@@ -26,8 +27,9 @@ class PartyMemberModel with _$PartyMemberModel {
         partyId: entity.partyId,
         userId: entity.userId,
         nickname: entity.nickname,
-        jobId: entity.jobId, // job -> jobId로 변경
+        job: entity.job,
         power: entity.power,
+        fcmToken: entity.fcmToken,
         joinedAt: entity.joinedAt,
       );
 }
@@ -38,8 +40,9 @@ extension PartyMemberModelX on PartyMemberModel {
         partyId: partyId,
         userId: userId,
         nickname: nickname,
-        jobId: jobId, // job -> jobId로 변경
+        job: job,
         power: power,
+        fcmToken: fcmToken,
         joinedAt: joinedAt,
       );
 }
