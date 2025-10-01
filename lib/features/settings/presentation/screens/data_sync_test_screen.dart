@@ -91,7 +91,7 @@ class _DataSyncTestScreenState extends ConsumerState<DataSyncTestScreen> {
   Future<void> _syncTemplates() async {
     setState(() {
       _isLoading = true;
-      _lastAction = '템플릿 데이터 동기화 중...';
+      _lastAction = '컨텐츠 데이터 동기화 중...';
       _errorMessage = null;
     });
 
@@ -109,7 +109,7 @@ class _DataSyncTestScreenState extends ConsumerState<DataSyncTestScreen> {
       final success = await syncService.syncTemplates();
 
       setState(() {
-        _lastAction = success ? '✅ 템플릿 데이터 동기화 완료!' : '❌ 템플릿 데이터 동기화 실패';
+        _lastAction = success ? '✅ 컨텐츠 데이터 동기화 완료!' : '❌ 컨텐츠 데이터 동기화 실패';
         _isLoading = false;
       });
 
@@ -247,7 +247,7 @@ class _DataSyncTestScreenState extends ConsumerState<DataSyncTestScreen> {
                           if (_cacheStatus != null) ...[
                             _buildCacheInfo('직업', _cacheStatus!['jobs']),
                             const SizedBox(height: 16),
-                            _buildCacheInfo('템플릿', _cacheStatus!['templates']),
+                            _buildCacheInfo('컨텐츠', _cacheStatus!['templates']),
                           ] else
                             const Text('캐시 정보 없음'),
                         ],
@@ -314,7 +314,7 @@ class _DataSyncTestScreenState extends ConsumerState<DataSyncTestScreen> {
                   ElevatedButton.icon(
                     onPressed: _isLoading ? null : _syncTemplates,
                     icon: const Icon(Icons.dashboard_outlined),
-                    label: const Text('템플릿 데이터만 동기화'),
+                    label: const Text('컨텐츠 데이터만 동기화'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(16),
                     ),

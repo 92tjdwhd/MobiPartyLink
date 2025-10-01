@@ -13,6 +13,7 @@ _$PartyMemberModelImpl _$$PartyMemberModelImplFromJson(
       partyId: json['party_id'] as String,
       userId: json['user_id'] as String,
       nickname: json['nickname'] as String,
+      jobId: json['job_id'] as String?,
       job: json['job'] as String?,
       power: (json['power'] as num?)?.toInt(),
       fcmToken: json['fcm_token'] as String?,
@@ -22,10 +23,10 @@ _$PartyMemberModelImpl _$$PartyMemberModelImplFromJson(
 Map<String, dynamic> _$$PartyMemberModelImplToJson(
         _$PartyMemberModelImpl instance) =>
     <String, dynamic>{
-      'id': instance.id,
       'party_id': instance.partyId,
       'user_id': instance.userId,
       'nickname': instance.nickname,
+      'job_id': instance.jobId,
       'job': instance.job,
       'power': instance.power,
       'fcm_token': instance.fcmToken,

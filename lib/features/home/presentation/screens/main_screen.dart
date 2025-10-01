@@ -10,6 +10,7 @@ import 'package:mobi_party_link/features/party/presentation/widgets/party_info_b
 import 'package:mobi_party_link/features/party/presentation/widgets/party_edit_bottom_sheet.dart';
 import 'package:mobi_party_link/features/notification/presentation/screens/notification_settings_screen.dart';
 import 'package:mobi_party_link/features/profile/presentation/providers/profile_provider.dart';
+import 'package:mobi_party_link/features/profile/presentation/providers/profile_display_provider.dart';
 import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_card.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
@@ -19,6 +20,9 @@ import 'package:mobi_party_link/features/settings/presentation/screens/settings_
 import 'package:mobi_party_link/features/profile/presentation/screens/profile_management_screen.dart';
 import 'package:mobi_party_link/core/services/data_sync_service.dart';
 import 'package:mobi_party_link/core/di/injection.dart';
+import 'package:mobi_party_link/core/services/kakao_share_service.dart';
+import 'package:mobi_party_link/features/party/presentation/widgets/party_join_bottom_sheet.dart';
+import 'package:mobi_party_link/main.dart' as app;
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -39,7 +43,73 @@ class _MainScreenState extends ConsumerState<MainScreen>
     // 앱 초기화
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
+      _initializeDeepLink();
     });
+  }
+
+  /// Deep Link 초기화
+  void _initializeDeepLink() {
+    // Global Deep Link Service에 콜백 등록
+    app.deepLinkService.onPartyLinkReceived = (String partyId) {
+      print('📩 Deep Link로 파티 ID 수신: $partyId');
+      _handlePartyDeepLink(partyId);
+    };
+  }
+
+  /// Deep Link로 받은 파티 참가 처리
+  Future<void> _handlePartyDeepLink(String partyId) async {
+    try {
+      // 프로필 체크
+      final profileData = await ref.read(profileDataProvider.future);
+      if (profileData == null) {
+        // 프로필이 없으면 프로필 설정 먼저
+        final result = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => const ProfileSetupBottomSheet(),
+        );
+
+        if (result != true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('프로필 설정이 필요합니다')),
+          );
+          return;
+        }
+      }
+
+      // 파티 정보 가져오기
+      final partyRepository = ref.read(partyRepositoryProvider);
+      final partyResult = await partyRepository.getPartyById(partyId);
+
+      partyResult.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('파티를 찾을 수 없습니다: ${failure.message}')),
+          );
+        },
+        (party) {
+          if (party != null) {
+            // 파티 참가 바텀시트 표시
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => PartyJoinBottomSheet(party: party),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('파티 정보를 찾을 수 없습니다')),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      print('❌ Deep Link 파티 처리 실패: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('파티 정보를 불러오는데 실패했습니다')),
+      );
+    }
   }
 
   /// 앱 초기화
@@ -103,6 +173,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    // Deep Link Service는 global이므로 dispose하지 않음
     super.dispose();
   }
 
@@ -273,11 +344,11 @@ class _MainScreenState extends ConsumerState<MainScreen>
   }
 
   Widget _buildExistingProfile(WidgetRef ref) {
-    final mainProfileAsync = ref.watch(mainProfileProvider);
+    final mainProfileDisplayAsync = ref.watch(mainProfileDisplayProvider);
 
-    return mainProfileAsync.when(
-      data: (profile) {
-        if (profile == null) {
+    return mainProfileDisplayAsync.when(
+      data: (profileDisplay) {
+        if (profileDisplay == null) {
           return _buildProfileSetup();
         }
 
@@ -328,7 +399,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      profile.nickname,
+                      profileDisplay.nickname,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -337,7 +408,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
                       ),
                     ),
                     Text(
-                      '${profile.job} • ${profile.power}',
+                      '${profileDisplay.jobName} • ${profileDisplay.power}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -658,13 +729,26 @@ class _MainScreenState extends ConsumerState<MainScreen>
                             }
                           : null,
                       onShare: showCreateButton
-                          ? () {
-                              // TODO: 파티 공유 기능
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('파티 공유 기능은 준비 중입니다'),
-                                ),
-                              );
+                          ? () async {
+                              // 카카오톡 공유
+                              final success =
+                                  await KakaoShareService.sharePartyWithDetails(
+                                      parties[index]);
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('✅ 파티를 카카오톡으로 공유했습니다'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              } else if (!success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('❌ 공유에 실패했습니다'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
                             }
                           : null,
                     );

@@ -186,7 +186,7 @@ class PartyUtils {
       partyId: partyId,
       userId: user.id,
       nickname: nickname ?? '익명사용자',
-      jobId: job,
+      job: job,
       power: power,
       joinedAt: DateTime.now(),
     );

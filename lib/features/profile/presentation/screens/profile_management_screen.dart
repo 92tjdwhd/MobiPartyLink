@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobi_party_link/core/services/profile_service.dart';
 import 'package:mobi_party_link/features/profile/presentation/providers/profile_provider.dart';
 import 'package:mobi_party_link/features/profile/presentation/widgets/profile_setup_bottom_sheet.dart';
 import 'package:mobi_party_link/features/profile/presentation/widgets/profile_edit_bottom_sheet.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/job_provider.dart';
 import 'package:mobi_party_link/core/services/profile_service.dart';
 
 class ProfileManagementScreen extends ConsumerStatefulWidget {
@@ -252,12 +254,44 @@ class _ProfileManagementScreenState
             );
           },
         ),
-        subtitle: Text(
-          '${profile.job ?? '직업 미설정'} • ${profile.power ?? '파워 미설정'}',
-          style: TextStyle(
-            fontSize: 14,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
-          ),
+        subtitle: Consumer(
+          builder: (context, ref, child) {
+            // jobId → job 이름 변환
+            if (profile.jobId != null) {
+              final jobNameAsync =
+                  ref.watch(jobIdToNameProvider(profile.jobId!));
+              return jobNameAsync.when(
+                data: (jobName) => Text(
+                  '${jobName ?? '직업 미설정'} • ${profile.power ?? '파워 미설정'}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+                loading: () => Text(
+                  '로딩 중... • ${profile.power ?? '파워 미설정'}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+                error: (_, __) => Text(
+                  '직업 미설정 • ${profile.power ?? '파워 미설정'}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+              );
+            }
+            return Text(
+              '직업 미설정 • ${profile.power ?? '파워 미설정'}',
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            );
+          },
         ),
         trailing: Consumer(
           builder: (context, ref, child) {

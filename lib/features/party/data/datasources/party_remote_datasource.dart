@@ -23,6 +23,12 @@ abstract class PartyRemoteDataSource {
   Future<void> leaveParty(String partyId, String userId);
   Future<void> deleteParty(String partyId, String userId);
   Future<PartyEntity> updateParty(PartyEntity party);
+  Future<List<PartyEntity>> getMyParties(String userId);
+  Future<List<PartyEntity>> getJoinedParties(String userId);
+  Future<void> kickMember(
+      String partyId, String memberId, String creatorId); // 멤버 강퇴
+  Future<List<String>> getPartyMemberFcmTokens(
+      String partyId); // 파티 멤버 FCM 토큰 조회
   Stream<List<PartyEntity>> get partiesStream;
   Stream<PartyEntity?> watchParty(String partyId);
 }
@@ -120,23 +126,15 @@ class PartyRemoteDataSourceImpl implements PartyRemoteDataSource {
   @override
   Future<PartyEntity> createParty(PartyEntity party) async {
     try {
-      // 파티 생성
+      // 파티만 생성 (members는 Repository에서 별도로 추가)
       final partyResponse = await _supabaseClient
           .from('parties')
           .insert(PartyModel.fromEntity(party).toJson())
           .select()
           .single();
 
-      // 생성자를 첫 번째 멤버로 추가
-      if (party.members.isNotEmpty) {
-        await _supabaseClient
-            .from('party_members')
-            .insert(PartyMemberModel.fromEntity(party.members.first).toJson());
-      }
-
-      // 완전한 파티 정보 조회
-      final fullParty = await getPartyById(partyResponse['id']);
-      return fullParty!;
+      // PartyModel로 변환하여 반환
+      return PartyModel.fromJson(partyResponse).toEntity();
     } catch (e) {
       throw ServerException(message: '파티 생성에 실패했습니다: $e');
     }
@@ -214,6 +212,98 @@ class PartyRemoteDataSourceImpl implements PartyRemoteDataSource {
       return updatedParty!;
     } catch (e) {
       throw ServerException(message: '파티 업데이트에 실패했습니다: $e');
+    }
+  }
+
+  @override
+  Future<List<PartyEntity>> getMyParties(String userId) async {
+    try {
+      final response = await _supabaseClient.from('parties').select('''
+            *,
+            party_members(*)
+          ''').eq('creator_id', userId).order('created_at', ascending: false);
+
+      print('🔍 getMyParties 응답: ${response.length}개');
+      final parties = (response as List).map((json) {
+        print(
+            '🔍 파티 JSON: ${json['name']}, members: ${json['party_members']?.length ?? 0}개');
+        return PartyModel.fromJson(json).toEntity();
+      }).toList();
+
+      print(
+          '🔍 변환된 파티: ${parties.length}개, 첫 번째 파티 멤버: ${parties.isNotEmpty ? parties.first.members.length : 0}개');
+      return parties;
+    } catch (e) {
+      throw ServerException(message: '내 파티 목록을 가져오는데 실패했습니다: $e');
+    }
+  }
+
+  @override
+  Future<List<PartyEntity>> getJoinedParties(String userId) async {
+    try {
+      final response = await _supabaseClient
+          .from('parties')
+          .select('''
+            *,
+            party_members!inner(*)
+          ''')
+          .eq('party_members.user_id', userId)
+          .order('created_at', ascending: false);
+
+      print('🔍 getJoinedParties 응답: ${response.length}개');
+      final parties = (response as List).map((json) {
+        print(
+            '🔍 참가 파티 JSON: ${json['name']}, members: ${json['party_members']?.length ?? 0}개');
+        return PartyModel.fromJson(json).toEntity();
+      }).toList();
+
+      print(
+          '🔍 변환된 참가 파티: ${parties.length}개, 첫 번째 파티 멤버: ${parties.isNotEmpty ? parties.first.members.length : 0}개');
+      return parties;
+    } catch (e) {
+      throw ServerException(message: '참가한 파티 목록을 가져오는데 실패했습니다: $e');
+    }
+  }
+
+  @override
+  Future<void> kickMember(
+      String partyId, String memberId, String creatorId) async {
+    try {
+      // 생성자 권한 확인
+      final party = await getPartyById(partyId);
+      if (party == null) {
+        throw ServerException(message: '파티를 찾을 수 없습니다');
+      }
+      if (party.creatorId != creatorId) {
+        throw ServerException(message: '멤버 강퇴 권한이 없습니다');
+      }
+
+      // 멤버 삭제
+      await _supabaseClient
+          .from('party_members')
+          .delete()
+          .eq('id', memberId)
+          .eq('party_id', partyId);
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException(message: '멤버 강퇴에 실패했습니다: $e');
+    }
+  }
+
+  @override
+  Future<List<String>> getPartyMemberFcmTokens(String partyId) async {
+    try {
+      final response = await _supabaseClient
+          .from('party_members')
+          .select('fcm_token')
+          .eq('party_id', partyId)
+          .not('fcm_token', 'is', null);
+
+      return (response as List)
+          .map((json) => json['fcm_token'] as String)
+          .toList();
+    } catch (e) {
+      throw ServerException(message: 'FCM 토큰 조회에 실패했습니다: $e');
     }
   }
 

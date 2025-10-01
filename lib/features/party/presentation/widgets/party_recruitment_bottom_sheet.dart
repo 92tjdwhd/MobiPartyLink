@@ -410,7 +410,7 @@ class _PartyRecruitmentBottomSheetState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '템플릿 선택',
+          '컨텐츠 선택',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -601,34 +601,44 @@ class _PartyRecruitmentBottomSheetState
           ),
         ),
         Container(
-          width: 120,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          width: 130,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(8),
             color: Theme.of(context).scaffoldBackgroundColor,
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                icon: Icon(Icons.remove, size: 20),
-                onPressed: () {
+              InkWell(
+                onTap: () {
                   if (limit > 0) onChanged(limit - 1);
                 },
-              ),
-              Text(
-                limit.toString(),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.titleLarge?.color,
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(Icons.remove, size: 16),
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.add, size: 20),
-                onPressed: () {
-                  onChanged(limit + 1);
-                },
+              SizedBox(
+                width: 30,
+                child: Center(
+                  child: Text(
+                    limit.toString(),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                    ),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () => onChanged(limit + 1),
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(Icons.add, size: 16),
+                ),
               ),
             ],
           ),
@@ -666,9 +676,32 @@ class _PartyRecruitmentBottomSheetState
 
   Future<void> _createParty() async {
     if (_formKey.currentState!.validate()) {
-      // 프로필 체크
-      final hasProfile = await ProfileService.hasProfile();
-      if (!hasProfile) {
+      // 직업 제한 검증
+      if (_requireJobCategory) {
+        final totalJobLimit = _tankLimit + _healerLimit + _dpsLimit;
+        if (totalJobLimit != _maxMembers) {
+          await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('직업 제한 오류'),
+              content: Text(
+                '직업 제한 합계(${totalJobLimit}명)와 파티 인원수(${_maxMembers}명)가 일치하지 않습니다.\n\n직업 제한 합계를 ${_maxMembers}명으로 맞춰주세요.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('확인'),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
+      // 프로필 체크 (프로필 리스트 확인)
+      final profiles = await ProfileService.getProfileList();
+      if (profiles.isEmpty) {
         _showProfileSetupDialog();
         return;
       }
@@ -806,7 +839,7 @@ class _PartyRecruitmentBottomSheetState
   }
 
   Future<void> _selectTemplate() async {
-    // 로컬 저장소에서 템플릿 목록 가져오기
+    // 로컬 저장소에서 컨텐츠 목록 가져오기
     final templates = await ref.read(localTemplatesProvider.future);
 
     if (!mounted) return;
@@ -814,7 +847,7 @@ class _PartyRecruitmentBottomSheetState
     if (templates.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('템플릿 데이터가 없습니다. 설정에서 데이터 동기화를 진행해주세요.'),
+          content: Text('컨텐츠 데이터가 없습니다. 설정에서 데이터 동기화를 진행해주세요.'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -824,7 +857,7 @@ class _PartyRecruitmentBottomSheetState
     final template = await showDialog<dynamic>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('템플릿 선택'),
+        title: const Text('컨텐츠 선택'),
         content: SizedBox(
           width: double.maxFinite,
           height: 400,
@@ -832,10 +865,13 @@ class _PartyRecruitmentBottomSheetState
             itemCount: templates.length,
             itemBuilder: (context, index) {
               final t = templates[index];
+              final powerText = t.maxPower == null
+                  ? '투력 ${t.minPower ?? 0}만 이상'
+                  : '투력 ${t.minPower ?? 0}-${t.maxPower}만';
+
               return ListTile(
                 title: Text('${t.name} (${t.difficulty})'),
-                subtitle: Text(
-                    '${t.category} • ${t.maxMembers}명 • 투력 ${t.minPower}-${t.maxPower}'),
+                subtitle: Text('${t.category} • ${t.maxMembers}명 • $powerText'),
                 onTap: () => Navigator.pop(context, t),
               );
             },
@@ -903,27 +939,33 @@ class _PartyRecruitmentBottomSheetState
       context: context,
       builder: (context) => AlertDialog(
         title: Text('난이도 선택'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            '입문',
-            '쉬움',
-            '보통',
-            '어려움',
-            '매우어려움',
-            '지옥1',
-            '지옥2',
-            '지옥3',
-            '지옥4',
-            '지옥5',
-            '지옥6',
-            '지옥7',
-          ]
-              .map((difficulty) => ListTile(
-                    title: Text(difficulty),
-                    onTap: () => Navigator.pop(context, difficulty),
-                  ))
-              .toList(),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                '입문',
+                '쉬움',
+                '보통',
+                '어려움',
+                '매우어려움',
+                '지옥1',
+                '지옥2',
+                '지옥3',
+                '지옥4',
+                '지옥5',
+                '지옥6',
+                '지옥7',
+              ]
+                  .map((difficulty) => ListTile(
+                        title: Text(difficulty),
+                        onTap: () => Navigator.pop(context, difficulty),
+                      ))
+                  .toList(),
+            ),
+          ),
         ),
       ),
     );

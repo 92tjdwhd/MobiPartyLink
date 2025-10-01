@@ -10,7 +10,7 @@ part 'party_model.g.dart';
 @freezed
 class PartyModel with _$PartyModel {
   const factory PartyModel({
-    required String id,
+    @JsonKey(includeToJson: false) required String id, // ← id는 Supabase가 자동 생성
     required String name,
     @JsonKey(name: 'start_time') required DateTime startTime,
     @JsonKey(name: 'max_members') required int maxMembers,
@@ -30,7 +30,12 @@ class PartyModel with _$PartyModel {
     @JsonKey(name: 'dps_limit') @Default(0) int dpsLimit,
     required PartyStatus status,
     @JsonKey(name: 'creator_id') required String creatorId,
-    @Default([]) List<PartyMemberModel> members,
+    @JsonKey(
+        name: 'party_members', // ← Supabase가 보내는 키 이름
+        includeFromJson: true,
+        includeToJson: false) // ← members는 조회 시에만 포함
+    @Default([])
+    List<PartyMemberModel> members,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _PartyModel;
@@ -64,26 +69,32 @@ class PartyModel with _$PartyModel {
 }
 
 extension PartyModelX on PartyModel {
-  PartyEntity toEntity() => PartyEntity(
-        id: id,
-        name: name,
-        startTime: startTime,
-        maxMembers: maxMembers,
-        contentType: contentType,
-        category: category,
-        difficulty: difficulty,
-        requireJob: requireJob,
-        requirePower: requirePower,
-        minPower: minPower,
-        maxPower: maxPower,
-        requireJobCategory: requireJobCategory,
-        tankLimit: tankLimit,
-        healerLimit: healerLimit,
-        dpsLimit: dpsLimit,
-        status: status,
-        creatorId: creatorId,
-        members: members.map((e) => e.toEntity()).toList(),
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-      );
+  PartyEntity toEntity() {
+    print('🔍 PartyModel.toEntity(): ${name}, members: ${members.length}개');
+    final memberEntities = members.map((e) => e.toEntity()).toList();
+    print('🔍 변환된 memberEntities: ${memberEntities.length}개');
+
+    return PartyEntity(
+      id: id,
+      name: name,
+      startTime: startTime,
+      maxMembers: maxMembers,
+      contentType: contentType,
+      category: category,
+      difficulty: difficulty,
+      requireJob: requireJob,
+      requirePower: requirePower,
+      minPower: minPower,
+      maxPower: maxPower,
+      requireJobCategory: requireJobCategory,
+      tankLimit: tankLimit,
+      healerLimit: healerLimit,
+      dpsLimit: dpsLimit,
+      status: status,
+      creatorId: creatorId,
+      members: memberEntities,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
 }

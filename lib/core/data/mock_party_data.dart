@@ -7,124 +7,13 @@ class MockPartyData {
   static final List<PartyEntity> _joinedParties = [];
 
   static List<PartyEntity> getMyParties() {
-    // 기본 파티들과 동적으로 추가된 파티들을 합쳐서 반환
-    final defaultParties = [
-      PartyEntity(
-        id: '1',
-        name: '서큐버스 레이드 입문',
-        creatorId: 'user1',
-        startTime: DateTime.now().add(const Duration(minutes: 5)), // 5분 후로 변경
-        maxMembers: 4,
-        contentType: '서큐버스 레이드',
-        category: '레이드',
-        difficulty: '입문',
-        status: PartyStatus.pending,
-        members: [
-          PartyMemberEntity(
-            id: 'member1',
-            partyId: '1',
-            userId: 'user1',
-            nickname: '플레이어1',
-            jobId: 'warrior',
-            power: 1500,
-            joinedAt: DateTime.now().subtract(const Duration(minutes: 30)),
-          ),
-        ],
-        requireJob: true,
-        requirePower: true,
-        minPower: 1000,
-        maxPower: 2000,
-        requireJobCategory: true,
-        tankLimit: 1,
-        healerLimit: 1,
-        dpsLimit: 2,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-        updatedAt: DateTime.now().subtract(const Duration(hours: 1)),
-      ),
-      PartyEntity(
-        id: '2',
-        name: '글라스기브넨 레이드 어려움',
-        creatorId: 'user1',
-        startTime: DateTime.now().add(const Duration(minutes: 10)), // 10분 후로 변경
-        maxMembers: 8,
-        contentType: '글라스기브넨 레이드',
-        category: '레이드',
-        difficulty: '어려움',
-        status: PartyStatus.pending,
-        members: [
-          PartyMemberEntity(
-            id: 'member2',
-            partyId: '2',
-            userId: 'user1',
-            nickname: '플레이어1',
-            jobId: 'warrior',
-            power: 1500,
-            joinedAt: DateTime.now().subtract(const Duration(minutes: 15)),
-          ),
-        ],
-        requireJob: true,
-        requirePower: true,
-        minPower: 2000,
-        maxPower: 3000,
-        requireJobCategory: true,
-        tankLimit: 2,
-        healerLimit: 2,
-        dpsLimit: 4,
-        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-        updatedAt: DateTime.now().subtract(const Duration(minutes: 30)),
-      ),
-    ];
-
-    return [...defaultParties, ..._myParties];
+    // Mock 데이터 제거 - 서버에서만 가져오기
+    return _myParties;
   }
 
   static List<PartyEntity> getJoinedParties() {
-    // 기본 파티들과 동적으로 추가된 파티들을 합쳐서 반환
-    final defaultParties = [
-      PartyEntity(
-        id: '3',
-        name: '마스던전 어비스 입문',
-        creatorId: 'user2',
-        startTime: DateTime.now().add(const Duration(hours: 3)),
-        maxMembers: 4,
-        contentType: '마스던전 어비스',
-        category: '어비스',
-        difficulty: '입문',
-        status: PartyStatus.pending,
-        members: [
-          PartyMemberEntity(
-            id: 'member3',
-            partyId: '3',
-            userId: 'user2',
-            nickname: '파티장',
-            jobId: 'mage',
-            power: 1800,
-            joinedAt: DateTime.now().subtract(const Duration(hours: 1)),
-          ),
-          PartyMemberEntity(
-            id: 'member4',
-            partyId: '3',
-            userId: 'user1',
-            nickname: '플레이어1',
-            jobId: 'warrior',
-            power: 1500,
-            joinedAt: DateTime.now().subtract(const Duration(minutes: 20)),
-          ),
-        ],
-        requireJob: true,
-        requirePower: true,
-        minPower: 1200,
-        maxPower: 2500,
-        requireJobCategory: true,
-        tankLimit: 1,
-        healerLimit: 1,
-        dpsLimit: 2,
-        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-        updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-    ];
-
-    return [...defaultParties, ..._joinedParties];
+    // Mock 데이터 제거 - 서버에서만 가져오기
+    return _joinedParties;
   }
 
   // 새로 생성된 파티를 내가 만든 파티 리스트에 추가

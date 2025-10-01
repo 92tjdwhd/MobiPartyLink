@@ -233,7 +233,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '템플릿 선택',
+          '컨텐츠 선택',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -256,7 +256,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
               children: [
                 Text(
                   _selectedContentType.isEmpty
-                      ? '템플릿을 선택하세요'
+                      ? '컨텐츠를 선택하세요'
                       : _selectedContentType,
                   style: TextStyle(
                     fontSize: 14,
@@ -783,7 +783,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('템플릿 선택'),
+        title: Text('컨텐츠 선택'),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -791,10 +791,14 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
             itemCount: PartyTemplates.templates.length,
             itemBuilder: (context, index) {
               final template = PartyTemplates.templates[index];
+              final powerText = template['maxPower'] == null
+                  ? '투력 ${template['minPower'] ?? 0}만 이상'
+                  : '투력 ${template['minPower'] ?? 0}-${template['maxPower']}만';
+
               return ListTile(
                 title: Text(template['name']),
                 subtitle: Text(
-                    '${template['category']} • ${template['difficulty']} • ${template['maxMembers']}인'),
+                    '${template['category']} • ${template['difficulty']} • ${template['maxMembers']}인 • $powerText'),
                 onTap: () {
                   setState(() {
                     _selectedContentType = template['name'];
@@ -852,6 +856,29 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
 
   Future<void> _updateParty() async {
     if (_formKey.currentState!.validate()) {
+      // 직업 제한 검증
+      if (_requireJobCategory) {
+        final totalJobLimit = _tankLimit + _healerLimit + _dpsLimit;
+        if (totalJobLimit != _maxMembers) {
+          await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('직업 제한 오류'),
+              content: Text(
+                '직업 제한 합계(${totalJobLimit}명)와 파티 인원수(${_maxMembers}명)가 일치하지 않습니다.\n\n직업 제한 합계를 ${_maxMembers}명으로 맞춰주세요.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('확인'),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+
       try {
         await ref.read(partyEditNotifierProvider.notifier).editParty(
               partyId: widget.party.id,

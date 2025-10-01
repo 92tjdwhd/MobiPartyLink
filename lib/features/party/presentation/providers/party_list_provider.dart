@@ -9,9 +9,20 @@ import 'package:mobi_party_link/core/data/mock_party_data.dart';
 final myPartiesProvider = FutureProvider<List<PartyEntity>>((ref) async {
   print('myPartiesProvider 호출됨');
 
-  // 서버가 없으므로 Mock 데이터 사용
-  final parties = MockPartyData.getMyParties();
-  print('내가 만든 파티 로드 성공: ${parties.length}개');
+  // Supabase에서 내가 만든 파티 가져오기
+  final repository = ref.read(partyRepositoryProvider);
+  final result = await repository.getMyParties();
+
+  final parties = result.fold(
+    (failure) {
+      print('❌ 내 파티 로드 실패: ${failure.message}');
+      return <PartyEntity>[];
+    },
+    (parties) {
+      print('내가 만든 파티 로드 성공: ${parties.length}개');
+      return parties;
+    },
+  );
 
   // 파티 목록 로드 후 알림 동기화
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -23,8 +34,22 @@ final myPartiesProvider = FutureProvider<List<PartyEntity>>((ref) async {
 
 // 참가한 파티 리스트 Provider
 final joinedPartiesProvider = FutureProvider<List<PartyEntity>>((ref) async {
-  // 서버가 없으므로 Mock 데이터 사용
-  final parties = MockPartyData.getJoinedParties();
+  print('joinedPartiesProvider 호출됨');
+
+  // Supabase에서 참가한 파티 가져오기
+  final repository = ref.read(partyRepositoryProvider);
+  final result = await repository.getJoinedParties();
+
+  final parties = result.fold(
+    (failure) {
+      print('❌ 참가한 파티 로드 실패: ${failure.message}');
+      return <PartyEntity>[];
+    },
+    (parties) {
+      print('참가한 파티 로드 성공: ${parties.length}개');
+      return parties;
+    },
+  );
 
   // 참가한 파티 목록 로드 후 알림 동기화
   WidgetsBinding.instance.addPostFrameCallback((_) {

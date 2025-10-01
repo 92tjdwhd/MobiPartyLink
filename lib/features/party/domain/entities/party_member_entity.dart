@@ -9,7 +9,8 @@ class PartyMemberEntity with _$PartyMemberEntity {
     required String partyId,
     required String userId,
     required String nickname,
-    String? job, // 직업 이름 (로컬 프로필)
+    String? jobId, // 직업 ID (예: "varechar")
+    String? job, // 직업 이름 (예: "바처")
     int? power, // 전투력 (로컬 프로필)
     String? fcmToken, // FCM 토큰 (푸시 알림용)
     required DateTime joinedAt,

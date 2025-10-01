@@ -32,10 +32,18 @@ class _ProfileEditBottomSheetState
     _initializeFields();
   }
 
-  void _initializeFields() {
+  Future<void> _initializeFields() async {
     _nicknameController.text = widget.profile.nickname ?? '';
     _powerController.text = widget.profile.power?.toString() ?? '';
-    _selectedJob = widget.profile.jobId; // 직업 이름이 저장되어 있음
+
+    // 직업 ID → 직업 이름 변환 (UI 표시용)
+    if (widget.profile.jobId != null) {
+      final jobName =
+          await ref.read(jobIdToNameProvider(widget.profile.jobId!).future);
+      setState(() {
+        _selectedJob = jobName ?? widget.profile.jobId; // null이면 ID 그대로 표시
+      });
+    }
   }
 
   @override
@@ -359,10 +367,13 @@ class _ProfileEditBottomSheetState
       });
 
       try {
+        // 직업 이름 → 직업 ID 변환
+        final jobId = await ref.read(jobNameToIdProvider(_selectedJob!).future);
+
         // 업데이트된 프로필 객체 생성
         final updatedProfile = widget.profile.copyWith(
           nickname: _nicknameController.text.trim(),
-          jobId: _selectedJob,
+          jobId: jobId, // 직업 ID 저장 (예: "varechar")
           power: int.parse(_powerController.text.trim()),
           updatedAt: DateTime.now(),
         );

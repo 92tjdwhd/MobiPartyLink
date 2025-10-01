@@ -214,7 +214,7 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${PartyUtils.getJobText(member.jobId)} • 투력 ${member.power}',
+                  '${member.job ?? '미설정'} • 투력 ${member.power}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).textTheme.bodyMedium?.color,

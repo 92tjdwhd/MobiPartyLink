@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_member_entity.dart';
+import 'package:mobi_party_link/core/di/injection.dart';
+import 'package:mobi_party_link/core/services/fcm_push_service.dart';
+import 'package:mobi_party_link/core/data/mock_party_data.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_card.dart';
 import 'package:mobi_party_link/core/utils/party_utils.dart';
 
@@ -49,6 +53,8 @@ class _PartyManagementBottomSheetState
                   _buildPartyCard(),
                   const SizedBox(height: 24),
                   _buildMembersSection(),
+                  const SizedBox(height: 24),
+                  _buildDeleteButton(),
                 ],
               ),
             ),
@@ -217,7 +223,7 @@ class _PartyManagementBottomSheetState
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${PartyUtils.getJobText(member.jobId)} • 투력 ${member.power}',
+                  '${member.job ?? '미설정'} • 투력 ${member.power}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -294,13 +300,146 @@ class _PartyManagementBottomSheetState
     );
   }
 
-  void _kickMember(PartyMemberEntity member) {
-    // TODO: 실제 강퇴 로직 구현
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${member.nickname}님을 강퇴했습니다'),
-        backgroundColor: Colors.green,
+  Future<void> _kickMember(PartyMemberEntity member) async {
+    try {
+      final repository = ref.read(partyRepositoryProvider);
+      final authService = ref.read(authServiceProvider);
+
+      // 생성자 userId 가져오기
+      final creatorId = await authService.getUserId();
+      if (creatorId == null) {
+        throw Exception('사용자 인증이 필요합니다');
+      }
+
+      // 멤버 강퇴 API 호출
+      final result = await repository.kickMember(
+        widget.party.id,
+        member.id,
+        creatorId,
+      );
+
+      result.fold(
+        (failure) {
+          throw Exception(failure.message);
+        },
+        (_) {
+          print('✅ 멤버 강퇴 성공: ${member.nickname}');
+
+          // 파티 리스트 새로고침
+          refreshPartyList(ref);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${member.nickname}님을 강퇴했습니다'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context); // 바텀시트 닫기
+          }
+        },
+      );
+    } catch (e) {
+      print('❌ 멤버 강퇴 에러: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('멤버 강퇴에 실패했습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildDeleteButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _deleteParty,
+        icon: const Icon(Icons.delete_outline),
+        label: const Text('파티 삭제'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       ),
     );
+  }
+
+  Future<void> _deleteParty() async {
+    // 삭제 확인 다이얼로그
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('파티 삭제'),
+        content: Text(
+          '정말 "${widget.party.name}" 파티를 삭제하시겠습니까?\n\n삭제된 파티는 복구할 수 없습니다.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final repository = ref.read(partyRepositoryProvider);
+      final authService = ref.read(authServiceProvider);
+
+      // 생성자 userId 가져오기
+      final creatorId = await authService.getUserId();
+      if (creatorId == null) {
+        throw Exception('사용자 인증이 필요합니다');
+      }
+
+      // 파티 삭제 API 호출
+      final result = await repository.deleteParty(widget.party.id, creatorId);
+
+      result.fold(
+        (failure) {
+          throw Exception(failure.message);
+        },
+        (_) {
+          print('✅ 파티 삭제 성공: ${widget.party.name}');
+
+          // 파티 리스트 새로고침
+          refreshPartyList(ref);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('파티가 삭제되었습니다'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context); // 바텀시트 닫기
+          }
+        },
+      );
+    } catch (e) {
+      print('❌ 파티 삭제 에러: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('파티 삭제에 실패했습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

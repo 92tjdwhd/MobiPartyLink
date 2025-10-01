@@ -5,17 +5,31 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:kakao_flutter_sdk_share/kakao_flutter_sdk_share.dart';
 
 import 'core/di/injection.dart';
 import 'core/network/supabase_client.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/fcm_service.dart';
+import 'core/constants/kakao_constants.dart';
+import 'core/services/deep_link_service.dart';
 import 'firebase_options.dart';
 import 'features/notification/presentation/providers/notification_provider.dart';
 
+// Global Deep Link Service
+final deepLinkService = DeepLinkService();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 카카오 SDK 초기화
+  KakaoSdk.init(nativeAppKey: KakaoConstants.nativeAppKey);
+  print('✅ 카카오 SDK 초기화 완료');
+
+  // Deep Link Service 초기화 (앱 시작 시 바로 리스닝 시작)
+  await deepLinkService.initialize();
+  print('✅ Deep Link Service 초기화 완료');
 
   // 플랫폼별 시스템 UI 설정 (웹 제외)
   if (!kIsWeb) {

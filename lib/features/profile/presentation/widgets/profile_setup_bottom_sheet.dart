@@ -352,10 +352,13 @@ class _ProfileSetupBottomSheetState
       });
 
       try {
+        // 직업 이름 → 직업 ID 변환
+        final jobId = await ref.read(jobNameToIdProvider(_selectedJob).future);
+
         final profile = UserProfile(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           nickname: _nicknameController.text.trim(),
-          jobId: _selectedJob,
+          jobId: jobId, // 직업 ID 저장 (예: "varechar")
           power: int.parse(_powerController.text.trim()),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),

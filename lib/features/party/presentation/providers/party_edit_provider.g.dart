@@ -6,7 +6,7 @@ part of 'party_edit_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$partyEditNotifierHash() => r'5394c2dc78adf88eebf4ba0ca353dd00d04480f3';
+String _$partyEditNotifierHash() => r'461a1e35389f6bb96d6d5d10dfb67ec899bde48c';
 
 /// See also [PartyEditNotifier].
 @ProviderFor(PartyEditNotifier)

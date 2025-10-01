@@ -74,9 +74,9 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
@@ -471,7 +471,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
           elevation: 0,
         ),
         child: _isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
@@ -587,8 +587,8 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
     };
 
     for (final member in widget.party.members) {
-      if (member.jobId != null) {
-        final category = _getJobCategory(member.jobId!);
+      if (member.job != null) {
+        final category = _getJobCategory(member.job!);
         if (counts.containsKey(category)) {
           counts[category] = counts[category]! + 1;
         }
@@ -637,11 +637,14 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
     try {
       // 기존 프로필이 없고 저장하기가 체크된 경우에만 프로필 저장
       if (!_hasExistingProfile && _saveProfile) {
+        final now = DateTime.now();
         final profile = UserProfile(
+          id: now.millisecondsSinceEpoch.toString(),
           nickname: _nicknameController.text.trim(),
-          job: _selectedJob,
-          power: int.parse(_powerController.text),
-          createdAt: DateTime.now(),
+          jobId: _selectedJob,
+          power: int.tryParse(_powerController.text),
+          createdAt: now,
+          updatedAt: now,
         );
         await ProfileService.saveProfile(profile);
       }
@@ -650,11 +653,11 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
       await Future.delayed(const Duration(seconds: 1)); // 임시 딜레이
 
       // 파티 참여 성공 시 알림 예약
-      final notificationTime =
-          await ref.read(notificationSettingsNotifierProvider);
+      final minutesBefore =
+          await ref.read(notificationSettingsNotifierProvider.future);
       await ref
           .read(notificationNotifierProvider.notifier)
-          .schedulePartyNotification(widget.party, notificationTime);
+          .schedulePartyNotification(widget.party, minutesBefore);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

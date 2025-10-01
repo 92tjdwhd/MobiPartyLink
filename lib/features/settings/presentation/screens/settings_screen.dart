@@ -183,13 +183,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               subtitle: 'Supabase 연동 및 로컬 저장소 테스트',
               onTap: () => _navigateToDataSyncTest(context),
             ),
-            _buildDivider(),
-            _buildSettingsItem(
-              icon: Icons.notifications_active,
-              title: 'FCM 푸시 테스트',
-              subtitle: 'Edge Function을 통한 FCM 푸시 알림 테스트',
-              onTap: () => _testFcmPush(context),
-            ),
+            // FCM 푸시 테스트는 나중에 추가
           ]),
 
           SizedBox(height: 24),

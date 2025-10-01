@@ -25,7 +25,7 @@ _$PartyModelImpl _$$PartyModelImplFromJson(Map<String, dynamic> json) =>
       dpsLimit: (json['dps_limit'] as num?)?.toInt() ?? 0,
       status: $enumDecode(_$PartyStatusEnumMap, json['status']),
       creatorId: json['creator_id'] as String,
-      members: (json['members'] as List<dynamic>?)
+      members: (json['party_members'] as List<dynamic>?)
               ?.map((e) => PartyMemberModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -39,7 +39,6 @@ _$PartyModelImpl _$$PartyModelImplFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$$PartyModelImplToJson(_$PartyModelImpl instance) =>
     <String, dynamic>{
-      'id': instance.id,
       'name': instance.name,
       'start_time': instance.startTime.toIso8601String(),
       'max_members': instance.maxMembers,
@@ -56,7 +55,6 @@ Map<String, dynamic> _$$PartyModelImplToJson(_$PartyModelImpl instance) =>
       'dps_limit': instance.dpsLimit,
       'status': _$PartyStatusEnumMap[instance.status]!,
       'creator_id': instance.creatorId,
-      'members': instance.members,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };

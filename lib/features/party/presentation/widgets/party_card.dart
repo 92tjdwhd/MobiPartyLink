@@ -85,9 +85,26 @@ class PartyCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // 카테고리와 난이도
+                // 컨텐츠, 카테고리, 난이도
                 Row(
                   children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        party.contentType,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
@@ -104,7 +121,7 @@ class PartyCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
@@ -350,8 +367,8 @@ class PartyCard extends StatelessWidget {
     };
 
     for (final member in party.members) {
-      if (member.jobId != null) {
-        final category = _getJobCategory(member.jobId!);
+      if (member.job != null) {
+        final category = _getJobCategory(member.job!);
         if (counts.containsKey(category)) {
           counts[category] = counts[category]! + 1;
         }

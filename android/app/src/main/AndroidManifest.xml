@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Kakao SDK Queries -->
+    <queries>
+        <package android:name="com.kakao.talk" />
+    </queries>
+    
     <!-- 네트워크 권한 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -49,6 +55,39 @@
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            
+            <!-- Deep Link for Kakao Share -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                
+                <!-- Custom Scheme: mobipartylink://party/123 -->
+                <data android:scheme="mobipartylink"
+                      android:host="party" />
+            </intent-filter>
+            
+            <!-- App Links (HTTPS) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                
+                <!-- https://mobipartylink.page.link/party/123 -->
+                <data android:scheme="https"
+                      android:host="mobipartylink.page.link" />
+            </intent-filter>
+            
+            <!-- Kakao Login (필요시) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                
+                <!-- kakao{NATIVE_APP_KEY}://oauth -->
+                <data android:scheme="kakaoa552b4938e0195fdcec43c291f5ddcdc"
+                      android:host="oauth" />
             </intent-filter>
         </activity>
         

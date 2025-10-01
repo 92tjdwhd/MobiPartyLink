@@ -38,6 +38,10 @@ abstract class PartyRepository {
   /// 파티 정보를 업데이트합니다 (생성자만 가능)
   Future<Either<Failure, PartyEntity>> updateParty(PartyEntity party);
 
+  /// 멤버를 강퇴합니다 (생성자만 가능)
+  Future<Either<Failure, void>> kickMember(
+      String partyId, String memberId, String creatorId);
+
   /// 내가 만든 파티 목록을 가져옵니다
   Future<Either<Failure, List<PartyEntity>>> getMyParties();
 
