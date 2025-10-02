@@ -89,6 +89,17 @@
                 <data android:scheme="kakaoa552b4938e0195fdcec43c291f5ddcdc"
                       android:host="oauth" />
             </intent-filter>
+            
+            <!-- Kakao Share Deep Link -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                
+                <!-- kakao{NATIVE_APP_KEY}://kakaolink -->
+                <data android:scheme="kakaoa552b4938e0195fdcec43c291f5ddcdc"
+                      android:host="kakaolink" />
+            </intent-filter>
         </activity>
         
         <!-- 알림 수신기 -->

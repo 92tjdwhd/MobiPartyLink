@@ -27,7 +27,7 @@ class _PartyRecruitmentBottomSheetState
   String _selectedContentType = '아르카나 레이드';
   int _maxMembers = 6;
   DateTime _startTime = DateTime.now().add(const Duration(hours: 1));
-  DateTime _endTime = DateTime.now().add(const Duration(hours: 2));
+  final DateTime _endTime = DateTime.now().add(const Duration(hours: 2));
   bool _requirePower = true;
   bool _requireJob = true;
   bool _requireJobCategory = false;
@@ -45,11 +45,11 @@ class _PartyRecruitmentBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
@@ -133,7 +133,7 @@ class _PartyRecruitmentBottomSheetState
               color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
-          Spacer(),
+          const Spacer(),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: Icon(
@@ -294,7 +294,6 @@ class _PartyRecruitmentBottomSheetState
               _requirePower = value;
             });
           },
-          activeColor: Colors.green,
           activeThumbColor: Colors.green,
           activeTrackColor: Colors.green.withOpacity(0.3),
           inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
@@ -324,7 +323,7 @@ class _PartyRecruitmentBottomSheetState
               _requireJob = value;
             });
           },
-          activeColor: Theme.of(context).primaryColor,
+          activeThumbColor: Theme.of(context).primaryColor,
           activeTrackColor: Theme.of(context).primaryColor.withOpacity(0.8),
           inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
           inactiveTrackColor: Theme.of(context).dividerColor,
@@ -346,7 +345,7 @@ class _PartyRecruitmentBottomSheetState
           ),
         ),
         const SizedBox(height: 8),
-        InkWell(
+        GestureDetector(
           onTap: _selectCategory,
           child: Container(
             width: double.infinity,
@@ -356,12 +355,21 @@ class _PartyRecruitmentBottomSheetState
               borderRadius: BorderRadius.circular(8),
               color: Theme.of(context).scaffoldBackgroundColor,
             ),
-            child: Text(
-              _selectedCategory,
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).textTheme.titleLarge?.color,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedCategory,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.titleLarge?.color,
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
+                ),
+              ],
             ),
           ),
         ),
@@ -382,7 +390,7 @@ class _PartyRecruitmentBottomSheetState
           ),
         ),
         const SizedBox(height: 8),
-        InkWell(
+        GestureDetector(
           onTap: _selectDifficulty,
           child: Container(
             width: double.infinity,
@@ -392,12 +400,21 @@ class _PartyRecruitmentBottomSheetState
               borderRadius: BorderRadius.circular(8),
               color: Theme.of(context).scaffoldBackgroundColor,
             ),
-            child: Text(
-              _selectedDifficulty,
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).textTheme.titleLarge?.color,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedDifficulty,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.titleLarge?.color,
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
+                ),
+              ],
             ),
           ),
         ),
@@ -418,7 +435,7 @@ class _PartyRecruitmentBottomSheetState
           ),
         ),
         const SizedBox(height: 8),
-        InkWell(
+        GestureDetector(
           onTap: _selectTemplate,
           child: Container(
             width: double.infinity,
@@ -428,12 +445,21 @@ class _PartyRecruitmentBottomSheetState
               borderRadius: BorderRadius.circular(8),
               color: Theme.of(context).scaffoldBackgroundColor,
             ),
-            child: Text(
-              _selectedContentType,
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).textTheme.titleLarge?.color,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedContentType,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.titleLarge?.color,
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
+                ),
+              ],
             ),
           ),
         ),
@@ -553,7 +579,7 @@ class _PartyRecruitmentBottomSheetState
               _requireJobCategory = value;
             });
           },
-          activeColor: Theme.of(context).primaryColor,
+          activeThumbColor: Theme.of(context).primaryColor,
           activeTrackColor: Theme.of(context).primaryColor.withOpacity(0.8),
           inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
           inactiveTrackColor: Theme.of(context).dividerColor,
@@ -615,7 +641,7 @@ class _PartyRecruitmentBottomSheetState
                 onTap: () {
                   if (limit > 0) onChanged(limit - 1);
                 },
-                child: Padding(
+                child: const Padding(
                   padding: EdgeInsets.all(8),
                   child: Icon(Icons.remove, size: 16),
                 ),
@@ -635,7 +661,7 @@ class _PartyRecruitmentBottomSheetState
               ),
               InkWell(
                 onTap: () => onChanged(limit + 1),
-                child: Padding(
+                child: const Padding(
                   padding: EdgeInsets.all(8),
                   child: Icon(Icons.add, size: 16),
                 ),
@@ -663,7 +689,7 @@ class _PartyRecruitmentBottomSheetState
           ),
           elevation: 0,
         ),
-        child: Text(
+        child: const Text(
           '파티 생성하기',
           style: TextStyle(
             fontSize: 16,
@@ -685,7 +711,7 @@ class _PartyRecruitmentBottomSheetState
             builder: (context) => AlertDialog(
               title: const Text('직업 제한 오류'),
               content: Text(
-                '직업 제한 합계(${totalJobLimit}명)와 파티 인원수(${_maxMembers}명)가 일치하지 않습니다.\n\n직업 제한 합계를 ${_maxMembers}명으로 맞춰주세요.',
+                '직업 제한 합계($totalJobLimit명)와 파티 인원수($_maxMembers명)가 일치하지 않습니다.\n\n직업 제한 합계를 $_maxMembers명으로 맞춰주세요.',
               ),
               actions: [
                 TextButton(
@@ -757,19 +783,19 @@ class _PartyRecruitmentBottomSheetState
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text('프로필 설정 필요'),
-        content: Text('파티를 생성하기 전에 프로필을 설정해주세요.'),
+        title: const Text('프로필 설정 필요'),
+        content: const Text('파티를 생성하기 전에 프로필을 설정해주세요.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('취소'),
+            child: const Text('취소'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _showProfileSetupBottomSheet();
             },
-            child: Text('프로필 설정'),
+            child: const Text('프로필 설정'),
           ),
         ],
       ),
@@ -818,13 +844,13 @@ class _PartyRecruitmentBottomSheetState
     final int? selectedMembers = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('인원수 선택'),
+        title: const Text('인원수 선택'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: List.generate(7, (index) {
             final members = index + 2;
             return ListTile(
-              title: Text('${members}명'),
+              title: Text('$members명'),
               onTap: () => Navigator.pop(context, members),
             );
           }),
@@ -906,7 +932,7 @@ class _PartyRecruitmentBottomSheetState
     final String? selectedCategory = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('카테고리 선택'),
+        title: const Text('카테고리 선택'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -938,7 +964,7 @@ class _PartyRecruitmentBottomSheetState
     final String? selectedDifficulty = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('난이도 선택'),
+        title: const Text('난이도 선택'),
         content: SizedBox(
           width: double.maxFinite,
           height: 400,

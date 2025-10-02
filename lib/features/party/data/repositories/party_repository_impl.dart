@@ -16,20 +16,19 @@ import '../../domain/repositories/party_repository.dart';
 import '../datasources/party_remote_datasource.dart';
 
 class PartyRepositoryImpl implements PartyRepository {
-  final PartyRemoteDataSource remoteDataSource;
-  final NetworkInfo networkInfo;
-  final AuthService authService;
-
   PartyRepositoryImpl({
     required this.remoteDataSource,
     required this.networkInfo,
     required this.authService,
   });
+  final PartyRemoteDataSource remoteDataSource;
+  final NetworkInfo networkInfo;
+  final AuthService authService;
 
   @override
   Future<Either<Failure, List<PartyEntity>>> getParties() async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
 
     try {
@@ -55,7 +54,7 @@ class PartyRepositoryImpl implements PartyRepository {
     PartyStatus? status,
   }) async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
 
     try {
@@ -81,7 +80,7 @@ class PartyRepositoryImpl implements PartyRepository {
   @override
   Future<Either<Failure, PartyEntity?>> getPartyById(String partyId) async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
 
     try {
@@ -109,7 +108,7 @@ class PartyRepositoryImpl implements PartyRepository {
         // 메인 프로필이 없으면 프로필 리스트에서 첫 번째 가져오기
         final profiles = await ProfileService.getProfileList();
         if (profiles.isEmpty) {
-          return Left(ServerFailure(message: '프로필을 먼저 설정해주세요'));
+          return const Left(ServerFailure(message: '프로필을 먼저 설정해주세요'));
         }
         // 첫 번째 프로필을 메인으로 설정
         await ProfileService.setMainProfile(profiles.first.id);
@@ -117,9 +116,15 @@ class PartyRepositoryImpl implements PartyRepository {
         print('✅ 첫 번째 프로필을 메인으로 설정: ${profile.nickname}');
       }
 
-      // 3. FCM 토큰 가져오기
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      print('✅ FCM 토큰: ${fcmToken?.substring(0, 20)}...');
+      // 3. FCM 토큰 가져오기 (실패 시 더미 토큰 사용)
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        print('✅ FCM 토큰: ${fcmToken?.substring(0, 20)}...');
+      } catch (e) {
+        fcmToken = 'dummy_fcm_token_${DateTime.now().millisecondsSinceEpoch}';
+        print('⚠️ FCM 토큰 가져오기 실패, 더미 토큰 사용: $e');
+      }
 
       // 4. 파티 생성 (id는 Supabase가 자동 생성)
       final newParty = party.copyWith(
@@ -130,7 +135,7 @@ class PartyRepositoryImpl implements PartyRepository {
 
       // 5. 네트워크 확인
       if (!await networkInfo.isConnected) {
-        return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+        return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
       }
 
       // 6. Supabase에 파티 저장
@@ -140,7 +145,7 @@ class PartyRepositoryImpl implements PartyRepository {
       // 7. 생성자를 첫 번째 멤버로 추가
       // 직업 ID → 직업 이름 변환
       String? jobName;
-      final profileJobId = profile?.jobId;
+      final profileJobId = profile.jobId;
       print('🔍 profile.jobId: $profileJobId');
 
       if (profileJobId != null) {
@@ -162,7 +167,7 @@ class PartyRepositoryImpl implements PartyRepository {
         id: '', // Supabase가 UUID 자동 생성
         partyId: savedParty.id, // 생성된 파티 ID 사용
         userId: userId,
-        nickname: profile!.nickname,
+        nickname: profile.nickname,
         jobId: profile.jobId, // 직업 ID (예: "varechar")
         job: jobName, // 직업 이름 (예: "바처")
         power: profile.power,
@@ -203,7 +208,7 @@ class PartyRepositoryImpl implements PartyRepository {
         // 메인 프로필이 없으면 프로필 리스트에서 첫 번째 가져오기
         final profiles = await ProfileService.getProfileList();
         if (profiles.isEmpty) {
-          return Left(ServerFailure(message: '프로필을 먼저 설정해주세요'));
+          return const Left(ServerFailure(message: '프로필을 먼저 설정해주세요'));
         }
         // 첫 번째 프로필을 메인으로 설정
         await ProfileService.setMainProfile(profiles.first.id);
@@ -211,12 +216,19 @@ class PartyRepositoryImpl implements PartyRepository {
         print('✅ 첫 번째 프로필을 메인으로 설정: ${profile.nickname}');
       }
 
-      // 3. FCM 토큰 가져오기
-      final fcmToken = await FirebaseMessaging.instance.getToken();
+      // 3. FCM 토큰 가져오기 (실패 시 더미 토큰 사용)
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        print('✅ FCM 토큰: ${fcmToken?.substring(0, 20)}...');
+      } catch (e) {
+        fcmToken = 'dummy_fcm_token_${DateTime.now().millisecondsSinceEpoch}';
+        print('⚠️ FCM 토큰 가져오기 실패, 더미 토큰 사용: $e');
+      }
 
       // 4. 직업 ID → 직업 이름 변환
       String? jobName;
-      final profileJobId = profile?.jobId;
+      final profileJobId = profile.jobId;
       if (profileJobId != null) {
         final jobs = await LocalStorageService.getJobs();
         if (jobs != null && jobs.isNotEmpty) {
@@ -232,7 +244,7 @@ class PartyRepositoryImpl implements PartyRepository {
       // 5. 멤버 정보 업데이트
       final updatedMember = member.copyWith(
         userId: userId,
-        nickname: profile!.nickname,
+        nickname: profile.nickname,
         jobId: profile.jobId, // 직업 ID (예: "varechar")
         job: jobName, // 직업 이름 (예: "바처")
         power: profile.power,
@@ -242,7 +254,7 @@ class PartyRepositoryImpl implements PartyRepository {
 
       // 6. Supabase에 저장
       if (!await networkInfo.isConnected) {
-        return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+        return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
       }
 
       final joinedMember =
@@ -259,7 +271,7 @@ class PartyRepositoryImpl implements PartyRepository {
   Future<Either<Failure, void>> leaveParty(
       String partyId, String userId) async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
 
     try {
@@ -278,14 +290,14 @@ class PartyRepositoryImpl implements PartyRepository {
   Future<Either<Failure, void>> deleteParty(
       String partyId, String userId) async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
 
     try {
       // 1. 파티 정보 조회 (파티명, 멤버 FCM 토큰)
       final party = await remoteDataSource.getPartyById(partyId);
       if (party == null) {
-        return Left(ServerFailure(message: '파티를 찾을 수 없습니다'));
+        return const Left(ServerFailure(message: '파티를 찾을 수 없습니다'));
       }
 
       // 2. 멤버들의 FCM 토큰 조회 (생성자 제외)
@@ -311,7 +323,7 @@ class PartyRepositoryImpl implements PartyRepository {
   @override
   Future<Either<Failure, PartyEntity>> updateParty(PartyEntity party) async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
 
     try {
@@ -340,14 +352,14 @@ class PartyRepositoryImpl implements PartyRepository {
   Future<Either<Failure, void>> kickMember(
       String partyId, String memberId, String creatorId) async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
 
     try {
       // 1. 파티 조회
       final party = await remoteDataSource.getPartyById(partyId);
       if (party == null) {
-        return Left(ServerFailure(message: '파티를 찾을 수 없습니다'));
+        return const Left(ServerFailure(message: '파티를 찾을 수 없습니다'));
       }
 
       // 2. 강퇴할 멤버 찾기
@@ -386,7 +398,7 @@ class PartyRepositoryImpl implements PartyRepository {
 
       // 2. 네트워크 확인
       if (!await networkInfo.isConnected) {
-        return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+        return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
       }
 
       // 3. Supabase에서 내가 생성한 파티 조회
@@ -414,7 +426,7 @@ class PartyRepositoryImpl implements PartyRepository {
 
       // 2. 네트워크 확인
       if (!await networkInfo.isConnected) {
-        return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+        return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
       }
 
       // 3. Supabase에서 참가한 파티 조회

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 /// Deep Link 처리 서비스
 class DeepLinkService {
-  static final DeepLinkService _instance = DeepLinkService._internal();
   factory DeepLinkService() => _instance;
   DeepLinkService._internal();
+  static final DeepLinkService _instance = DeepLinkService._internal();
 
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
@@ -28,9 +28,7 @@ class DeepLinkService {
 
     // 앱이 실행 중일 때 링크를 받은 경우 (Stream)
     _linkSubscription = _appLinks.uriLinkStream.listen(
-      (uri) {
-        _handleDeepLink(uri);
-      },
+      _handleDeepLink,
       onError: (err) {
         print('❌ Deep Link Stream 에러: $err');
       },
@@ -44,30 +42,58 @@ class DeepLinkService {
     print('📩 Deep Link 수신: $uri');
 
     try {
+      String? partyId;
+
+      // 1. URL Path에서 파티 ID 추출
       // mobipartylink://party/123
       // https://mobipartylink.page.link/party/123
-
       final pathSegments = uri.pathSegments;
+      if (pathSegments.length >= 2 && pathSegments[0] == 'party') {
+        partyId = pathSegments[1];
+        print('✅ Path에서 파티 ID 추출: $partyId');
+      }
 
-      if (pathSegments.isNotEmpty) {
-        // pathSegments[0] = "party"
-        // pathSegments[1] = "123" (party ID)
+      // 2. Query Parameters에서 파티 ID 추출 (카카오톡에서 전달)
+      // mobipartylink://party?partyId=123
+      // kakaoa552b4938e0195fdcec43c291f5ddcdc://kakaolink?partyId=123
+      if (partyId == null) {
+        partyId = uri.queryParameters['partyId'];
+        if (partyId != null) {
+          print('✅ Query Parameter에서 파티 ID 추출: $partyId');
+        }
+      }
 
-        if (pathSegments.length >= 2 && pathSegments[0] == 'party') {
-          final partyId = pathSegments[1];
-          print('✅ 파티 ID 추출: $partyId');
+      // 3. party_id 파라미터도 확인 (카카오톡에서 전달)
+      // kakaoa552b4938e0195fdcec43c291f5ddcdc://kakaolink?party_id=123
+      if (partyId == null) {
+        partyId = uri.queryParameters['party_id'];
+        if (partyId != null) {
+          print('✅ party_id Parameter에서 파티 ID 추출: $partyId');
+        }
+      }
 
-          // 콜백 호출
-          if (onPartyLinkReceived != null) {
-            onPartyLinkReceived!(partyId);
-          } else {
-            print('⚠️ onPartyLinkReceived 콜백이 설정되지 않음');
-          }
+      // 4. Fragment에서 파티 ID 추출
+      // mobipartylink://party#partyId=123
+      if (partyId == null && uri.fragment.isNotEmpty) {
+        final fragmentParams = Uri.splitQueryString(uri.fragment);
+        partyId = fragmentParams['partyId'];
+        if (partyId != null) {
+          print('✅ Fragment에서 파티 ID 추출: $partyId');
+        }
+      }
+
+      // 파티 ID가 있으면 콜백 호출
+      if (partyId != null && partyId.isNotEmpty) {
+        if (onPartyLinkReceived != null) {
+          onPartyLinkReceived!(partyId);
         } else {
-          print('⚠️ 지원하지 않는 Deep Link 형식: $uri');
+          print('⚠️ onPartyLinkReceived 콜백이 설정되지 않음');
         }
       } else {
-        print('⚠️ Path Segments가 비어있음: $uri');
+        print('⚠️ 파티 ID를 찾을 수 없음: $uri');
+        print('   - Path Segments: $pathSegments');
+        print('   - Query Parameters: ${uri.queryParameters}');
+        print('   - Fragment: ${uri.fragment}');
       }
     } catch (e) {
       print('❌ Deep Link 파싱 실패: $e');

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_card.dart';
 import 'package:mobi_party_link/core/services/profile_service.dart';
+import 'package:mobi_party_link/core/di/injection.dart';
 import 'package:mobi_party_link/features/notification/presentation/providers/notification_provider.dart';
 import 'package:mobi_party_link/features/notification/presentation/providers/notification_settings_provider.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/job_provider.dart';
 
 class PartyJoinBottomSheet extends ConsumerStatefulWidget {
   final PartyEntity party;
@@ -43,22 +45,64 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
     if (mainProfile != null) {
       setState(() {
         _nicknameController.text = mainProfile.nickname;
-        _selectedJob = mainProfile.job;
-        _powerController.text = mainProfile.power.toString();
+        // jobId를 실제 직업명으로 변환
+        if (mainProfile.jobId != null) {
+          _selectedJob = mainProfile.jobId!; // 일단 jobId로 설정하고 나중에 변환
+        } else {
+          _selectedJob = '전사'; // 기본값
+        }
+        _powerController.text = mainProfile.power?.toString() ?? '';
         _hasExistingProfile = true;
         _saveProfile = false; // 메인 프로필이 있으면 저장 플래그 비활성화
       });
+
+      // jobId를 실제 직업명으로 변환
+      if (mainProfile.jobId != null) {
+        try {
+          final jobName =
+              await ref.read(jobIdToNameProvider(mainProfile.jobId!).future);
+          setState(() {
+            _selectedJob = jobName ?? '전사';
+          });
+        } catch (e) {
+          print('❌ 직업명 변환 실패: $e');
+          setState(() {
+            _selectedJob = '전사'; // 변환 실패시 기본값
+          });
+        }
+      }
     } else {
       // 메인 프로필이 없으면 기존 프로필 로드
       final existingProfile = await ProfileService.getProfile();
       if (existingProfile != null) {
         setState(() {
           _nicknameController.text = existingProfile.nickname;
-          _selectedJob = existingProfile.job;
-          _powerController.text = existingProfile.power.toString();
+          // jobId를 실제 직업명으로 변환
+          if (existingProfile.jobId != null) {
+            _selectedJob = existingProfile.jobId!; // 일단 jobId로 설정하고 나중에 변환
+          } else {
+            _selectedJob = '전사'; // 기본값
+          }
+          _powerController.text = existingProfile.power?.toString() ?? '';
           _hasExistingProfile = true;
           _saveProfile = false; // 기존 프로필이 있으면 저장 플래그 비활성화
         });
+
+        // jobId를 실제 직업명으로 변환
+        if (existingProfile.jobId != null) {
+          try {
+            final jobName = await ref
+                .read(jobIdToNameProvider(existingProfile.jobId!).future);
+            setState(() {
+              _selectedJob = jobName ?? '전사';
+            });
+          } catch (e) {
+            print('❌ 직업명 변환 실패: $e');
+            setState(() {
+              _selectedJob = '전사'; // 변환 실패시 기본값
+            });
+          }
+        }
       }
     }
   }
@@ -129,12 +173,12 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
   }
 
   Widget _buildHeader() {
-    return const Text(
+    return Text(
       '파티 참여하기',
       style: TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: Color(0xFF000000),
+        color: Theme.of(context).textTheme.titleLarge?.color,
       ),
     );
   }
@@ -163,12 +207,12 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '프로필 정보',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF000000),
+            color: Theme.of(context).textTheme.titleMedium?.color,
           ),
         ),
         const SizedBox(height: 16),
@@ -195,7 +239,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF000000),
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             if (isRequired) ...[
@@ -269,7 +313,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF000000),
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             if (isRequired) ...[
@@ -332,7 +376,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF000000),
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             if (isRequired) ...[
@@ -427,7 +471,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
                   '체크하면 모든 필드가 필수 입력됩니다',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
               ],
@@ -451,71 +495,57 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
   }
 
   Widget _buildJoinButton() {
-    // 제한 체크
-    final joinRestriction = _checkJoinRestrictions();
-    final isDisabled = _isLoading || joinRestriction != null;
+    // 제한 체크는 비동기이므로 FutureBuilder 사용
+    return FutureBuilder<String?>(
+      future: _checkJoinRestrictions(),
+      builder: (context, snapshot) {
+        final joinRestriction = snapshot.data;
+        final isDisabled = _isLoading || joinRestriction != null;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: isDisabled ? null : _joinParty,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF76769A)
-              : Theme.of(context).primaryColor,
-          foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 0,
-        ),
-        child: _isLoading
-            ? SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).colorScheme.onPrimary),
-                ),
-              )
-            : Text(
-                joinRestriction != null ? '참여할 수 없습니다' : '파티 참여하기',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDisabled
-                      ? Colors.grey[400]
-                      : Theme.of(context).colorScheme.onPrimary,
-                ),
+        return SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: isDisabled ? null : _joinParty,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF76769A)
+                  : Theme.of(context).primaryColor,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-      ),
+              elevation: 0,
+            ),
+            child: _isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).colorScheme.onPrimary),
+                    ),
+                  )
+                : Text(
+                    joinRestriction ?? '파티 참여하기',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDisabled
+                          ? Colors.grey[400]
+                          : Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+          ),
+        );
+      },
     );
   }
 
   Future<void> _selectJob() async {
-    final jobs = [
-      '전사',
-      '수도사',
-      '빙결술사',
-      '대검전사',
-      '검술사',
-      '마법사',
-      '화염술사',
-      '전격술사',
-      '궁수',
-      '석궁사수',
-      '장궁병',
-      '음유시인',
-      '댄서',
-      '악사',
-      '도적',
-      '격투가',
-      '듀얼블레이드',
-      '힐러',
-      '사제'
-    ];
+    // 로컬에 저장된 직업 데이터 가져오기
+    final jobs = await ref.read(jobNamesProvider.future);
 
     final selectedJob = await showDialog<String>(
       context: context,
@@ -546,13 +576,24 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
     }
   }
 
-  String? _checkJoinRestrictions() {
-    // 1. 파티 인원수 체크
+  Future<String?> _checkJoinRestrictions() async {
+    // 1. 이미 참여한 사용자 체크
+    final authService = ref.read(authServiceProvider);
+    final currentUserId = await authService.getUserId();
+    if (currentUserId != null) {
+      final isAlreadyJoined =
+          widget.party.members.any((member) => member.userId == currentUserId);
+      if (isAlreadyJoined) {
+        return '이미 참여한 파티입니다';
+      }
+    }
+
+    // 2. 파티 인원수 체크
     if (widget.party.members.length >= widget.party.maxMembers) {
       return '파티 인원이 가득 찼습니다.';
     }
 
-    // 2. 직업 제한 체크 (직업 제한이 활성화된 경우에만)
+    // 3. 직업 제한 체크 (직업 제한이 활성화된 경우에만)
     if (widget.party.requireJobCategory) {
       final jobCounts = _getJobCategoryCounts();
       final selectedJobCategory = _getJobCategory(_selectedJob);
@@ -617,7 +658,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
     }
 
     // 파티 참여 제한 체크
-    final joinRestriction = _checkJoinRestrictions();
+    final joinRestriction = await _checkJoinRestrictions();
     if (joinRestriction != null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -638,10 +679,12 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
       // 기존 프로필이 없고 저장하기가 체크된 경우에만 프로필 저장
       if (!_hasExistingProfile && _saveProfile) {
         final now = DateTime.now();
+        // 직업명을 jobId로 변환
+        final jobId = await ref.read(jobNameToIdProvider(_selectedJob).future);
         final profile = UserProfile(
           id: now.millisecondsSinceEpoch.toString(),
           nickname: _nicknameController.text.trim(),
-          jobId: _selectedJob,
+          jobId: jobId,
           power: int.tryParse(_powerController.text),
           createdAt: now,
           updatedAt: now,

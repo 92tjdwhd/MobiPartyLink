@@ -2,24 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/counter/presentation/screens/counter_screen.dart';
-import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
 class AppRouter {
-  static const String home = '/';
-  static const String main = '/main';
+  static const String main = '/';
   static const String counter = '/counter';
   static const String settings = '/settings';
 
   static final GoRouter router = GoRouter(
     initialLocation: main,
     routes: [
-      GoRoute(
-        path: home,
-        name: 'home',
-        builder: (context, state) => const HomeScreen(),
-      ),
       GoRoute(
         path: main,
         name: 'main',
@@ -58,7 +51,7 @@ class AppRouter {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => context.go(home),
+              onPressed: () => context.go(main),
               child: const Text('홈으로 돌아가기'),
             ),
           ],

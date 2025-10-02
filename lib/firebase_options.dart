@@ -44,12 +44,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDummy_Web_Key',
-    appId: '1:000000000000:web:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'mobi-party-link',
-    authDomain: 'mobi-party-link.firebaseapp.com',
-    storageBucket: 'mobi-party-link.appspot.com',
+    apiKey: 'AIzaSyDummy-Web-Key-For-Development',
+    appId: '1:123456789:web:dummy-web-app-id',
+    messagingSenderId: '123456789',
+    projectId: 'mobi-party-link-dev',
+    authDomain: 'mobi-party-link-dev.firebaseapp.com',
+    storageBucket: 'mobi-party-link-dev.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -66,15 +66,15 @@ class DefaultFirebaseOptions {
     messagingSenderId: '225781461439',
     projectId: 'mobi-party-link',
     storageBucket: 'mobi-party-link.firebasestorage.app',
-    iosBundleId: 'mobi-party-link',
+    iosBundleId: 'studio.deskmonent.mobipartylink',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDummy_macOS_Key',
-    appId: '1:000000000000:macos:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'mobi-party-link',
-    storageBucket: 'mobi-party-link.appspot.com',
-    iosBundleId: 'com.ideaware.mobipartylink',
+    apiKey: 'AIzaSyDummy-macOS-Key-For-Development',
+    appId: '1:123456789:ios:dummy-macos-app-id',
+    messagingSenderId: '123456789',
+    projectId: 'mobi-party-link-dev',
+    storageBucket: 'mobi-party-link-dev.appspot.com',
+    iosBundleId: 'studio.deskmonent.mobipartylink',
   );
 }

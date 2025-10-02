@@ -2,12 +2,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfile {
-  final String id;
-  final String nickname;
-  final String? jobId;
-  final int? power;
-  final DateTime createdAt;
-  final DateTime updatedAt;
 
   UserProfile({
     required this.id,
@@ -18,6 +12,23 @@ class UserProfile {
     required this.updatedAt,
   });
 
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      nickname: json['nickname'],
+      jobId: json['jobId'] ?? json['job'], // 기존 'job' 필드와 호환성 유지
+      power: json['power'],
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
+    );
+  }
+  final String id;
+  final String nickname;
+  final String? jobId;
+  final int? power;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -27,17 +38,6 @@ class UserProfile {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
-  }
-
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
-      id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      nickname: json['nickname'],
-      jobId: json['jobId'],
-      power: json['power'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-    );
   }
 
   // copyWith 메서드
@@ -196,7 +196,7 @@ class ProfileService {
   /// 메인 프로필 ID 설정
   static Future<bool> setMainProfile(String profileId) async {
     final prefs = await SharedPreferences.getInstance();
-    return await prefs.setString(_mainProfileKey, profileId);
+    return prefs.setString(_mainProfileKey, profileId);
   }
 
   /// 메인 프로필 ID 조회

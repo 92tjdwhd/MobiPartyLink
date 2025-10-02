@@ -16,28 +16,28 @@ final hasProfileProvider = FutureProvider<bool>((ref) async {
 final profileDataProvider = FutureProvider<UserProfile?>((ref) async {
   // 프로필 새로고침 트리거를 구독
   ref.watch(profileRefreshProvider);
-  return await ProfileService.getProfile();
+  return ProfileService.getMainProfile();
 });
 
 // 프로필 리스트 Provider (최대 3개)
 final profileListProvider = FutureProvider<List<UserProfile>>((ref) async {
   // 프로필 새로고침 트리거를 구독
   ref.watch(profileRefreshProvider);
-  return await ProfileService.getProfileList();
+  return ProfileService.getProfileList();
 });
 
 // 메인 프로필 ID Provider
 final mainProfileIdProvider = FutureProvider<String?>((ref) async {
   // 프로필 새로고침 트리거를 구독
   ref.watch(profileRefreshProvider);
-  return await ProfileService.getMainProfileId();
+  return ProfileService.getMainProfileId();
 });
 
 // 메인 프로필 객체 Provider
 final mainProfileProvider = FutureProvider<UserProfile?>((ref) async {
   // 프로필 새로고침 트리거를 구독
   ref.watch(profileRefreshProvider);
-  return await ProfileService.getMainProfile();
+  return ProfileService.getMainProfile();
 });
 
 // 프로필 새로고침 함수

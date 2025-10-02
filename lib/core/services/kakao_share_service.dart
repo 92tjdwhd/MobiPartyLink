@@ -7,9 +7,17 @@ class KakaoShareService {
   /// 파티 링크를 카카오톡으로 공유
   static Future<bool> shareParty(PartyEntity party) async {
     try {
-      // Deep Link URL 생성
+      // Deep Link URL 생성 (카카오톡용)
+      final kakaoDeepLink =
+          '${KakaoConstants.nativeAppKey}://kakaolink?partyId=${party.id}';
+
+      // 일반 Deep Link URL 생성
       final deepLink =
           '${KakaoConstants.deepLinkScheme}://${KakaoConstants.deepLinkHost}/${party.id}';
+
+      // 웹 URL 생성 (앱이 설치되어 있으면 앱으로 리다이렉트)
+      // Firebase Dynamic Links 대신 직접 Deep Link 사용
+      final webUrl = kakaoDeepLink;
 
       // 최대 투력 표시 처리
       final maxPowerText = party.maxPower != null
@@ -28,16 +36,22 @@ class KakaoShareService {
           imageUrl: Uri.parse(
               'https://mud-central.com/images/mabinogi_icon.png'), // 기본 이미지
           link: Link(
-            mobileWebUrl: Uri.parse(deepLink),
-            webUrl: Uri.parse(deepLink),
+            mobileWebUrl: Uri.parse(webUrl),
+            webUrl: Uri.parse(webUrl),
           ),
         ),
         buttons: [
           Button(
             title: '파티 참가하기',
             link: Link(
-              mobileWebUrl: Uri.parse(deepLink),
-              webUrl: Uri.parse(deepLink),
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+              androidExecutionParams: {
+                'partyId': party.id,
+              },
+              iosExecutionParams: {
+                'partyId': party.id,
+              },
             ),
           ),
         ],
@@ -71,8 +85,17 @@ class KakaoShareService {
   /// 커스텀 메시지로 파티 공유 (더 상세한 정보)
   static Future<bool> sharePartyWithDetails(PartyEntity party) async {
     try {
+      // Deep Link URL 생성 (카카오톡용)
+      final kakaoDeepLink =
+          '${KakaoConstants.nativeAppKey}://kakaolink?partyId=${party.id}';
+
+      // 일반 Deep Link URL 생성
       final deepLink =
           '${KakaoConstants.deepLinkScheme}://${KakaoConstants.deepLinkHost}/${party.id}';
+
+      // 웹 URL 생성 (앱이 설치되어 있으면 앱으로 리다이렉트)
+      // Firebase Dynamic Links 대신 직접 Deep Link 사용
+      final webUrl = kakaoDeepLink;
 
       // 파티 상세 정보
       final maxPowerText = party.maxPower != null
@@ -106,8 +129,8 @@ class KakaoShareService {
           imageUrl:
               Uri.parse('https://mud-central.com/images/mabinogi_icon.png'),
           link: Link(
-            mobileWebUrl: Uri.parse(deepLink),
-            webUrl: Uri.parse(deepLink),
+            mobileWebUrl: Uri.parse(webUrl),
+            webUrl: Uri.parse(webUrl),
           ),
         ),
         social: Social(
@@ -118,15 +141,27 @@ class KakaoShareService {
           Button(
             title: '파티 참가하기',
             link: Link(
-              mobileWebUrl: Uri.parse(deepLink),
-              webUrl: Uri.parse(deepLink),
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+              androidExecutionParams: {
+                'partyId': party.id,
+              },
+              iosExecutionParams: {
+                'partyId': party.id,
+              },
             ),
           ),
           Button(
             title: '앱에서 보기',
             link: Link(
-              mobileWebUrl: Uri.parse(deepLink),
-              webUrl: Uri.parse(deepLink),
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+              androidExecutionParams: {
+                'partyId': party.id,
+              },
+              iosExecutionParams: {
+                'partyId': party.id,
+              },
             ),
           ),
         ],

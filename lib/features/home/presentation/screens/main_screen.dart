@@ -59,10 +59,17 @@ class _MainScreenState extends ConsumerState<MainScreen>
   /// Deep Link로 받은 파티 참가 처리
   Future<void> _handlePartyDeepLink(String partyId) async {
     try {
-      // 프로필 체크
+      // 프로필 체크 - 로딩 중이면 기다림
+      print('🔍 프로필 체크 시작');
       final profileData = await ref.read(profileDataProvider.future);
+      print('🔍 프로필 체크 완료: ${profileData != null ? "프로필 있음" : "프로필 없음"}');
+      if (profileData != null) {
+        print('🔍 프로필 상세: ${profileData.toString()}');
+      }
+
       if (profileData == null) {
         // 프로필이 없으면 프로필 설정 먼저
+        print('🔍 프로필 설정 시트 표시');
         final result = await showModalBottomSheet<bool>(
           context: context,
           isScrollControlled: true,
@@ -71,11 +78,16 @@ class _MainScreenState extends ConsumerState<MainScreen>
         );
 
         if (result != true) {
+          print('🔍 프로필 설정 취소됨');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('프로필 설정이 필요합니다')),
           );
           return;
         }
+
+        print('🔍 프로필 설정 완료, 파티 가입 시트 표시');
+      } else {
+        print('🔍 프로필 있음, 바로 파티 가입 시트 표시');
       }
 
       // 파티 정보 가져오기
@@ -163,7 +175,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
     final permissionState = ref.read(permissionProvider);
     if (!permissionState.areAllPermissionsGranted) {
       final granted = await showPermissionDialog(context);
-      if (granted == true) {
+      if (granted ?? false) {
         // 권한이 허용된 경우 다시 체크
         await permissionNotifier.checkPermissions();
       }
@@ -179,6 +191,17 @@ class _MainScreenState extends ConsumerState<MainScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Deep Link 콜백을 매번 설정 (안전장치)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (app.deepLinkService.onPartyLinkReceived == null) {
+        app.deepLinkService.onPartyLinkReceived = (String partyId) {
+          print('📩 Deep Link로 파티 ID 수신: $partyId');
+          _handlePartyDeepLink(partyId);
+        };
+        print('✅ Deep Link 콜백 재설정 완료');
+      }
+    });
+
     // 플랫폼 감지 (웹 환경 고려)
     final isAndroid = !kIsWeb && Platform.isAndroid;
     final isIOS = !kIsWeb && Platform.isIOS;
@@ -336,7 +359,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
               return _buildProfileSetup();
             }
           },
-          loading: () => _buildProfileSetup(),
+          loading: _buildProfileSetup,
           error: (error, stack) => _buildProfileSetup(),
         );
       },
@@ -353,7 +376,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
         }
 
         return GestureDetector(
-          onTap: () => _navigateToProfileManagement(),
+          onTap: _navigateToProfileManagement,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             decoration: BoxDecoration(
@@ -422,7 +445,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
           ),
         );
       },
-      loading: () => _buildProfileSetup(),
+      loading: _buildProfileSetup,
       error: (error, stack) => _buildProfileSetup(),
     );
   }
@@ -576,7 +599,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
   }
 
   Widget _buildTabBar() {
-    return Container(
+    return ColoredBox(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: TabBar(
         controller: _tabController,
@@ -585,12 +608,12 @@ class _MainScreenState extends ConsumerState<MainScreen>
         indicatorSize: TabBarIndicatorSize.label,
         labelColor: Theme.of(context).textTheme.titleLarge?.color,
         unselectedLabelColor: Theme.of(context).textTheme.bodySmall?.color,
-        labelStyle: TextStyle(
+        labelStyle: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w700,
           letterSpacing: -0.2,
         ),
-        unselectedLabelStyle: TextStyle(
+        unselectedLabelStyle: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w400,
           letterSpacing: -0.2,
@@ -638,7 +661,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
                   onPressed: () {
                     refreshPartyList(ref);
                   },
-                  child: Text('다시 시도'),
+                  child: const Text('다시 시도'),
                 ),
               ],
             ),
@@ -683,7 +706,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
                   onPressed: () {
                     refreshPartyList(ref);
                   },
-                  child: Text('다시 시도'),
+                  child: const Text('다시 시도'),
                 ),
               ],
             ),
@@ -763,14 +786,12 @@ class _MainScreenState extends ConsumerState<MainScreen>
     return Container(
       margin: const EdgeInsets.all(20),
       child: ElevatedButton.icon(
-        onPressed: () {
-          _showPartyRecruitmentBottomSheet();
-        },
+        onPressed: _showPartyRecruitmentBottomSheet,
         icon: const Icon(
           Icons.add_rounded,
           size: 20,
         ),
-        label: Text(
+        label: const Text(
           '파티 만들기',
           style: TextStyle(
             fontSize: 16,
