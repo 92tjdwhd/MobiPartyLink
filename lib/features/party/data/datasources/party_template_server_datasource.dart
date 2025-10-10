@@ -14,10 +14,10 @@ abstract class PartyTemplateServerDataSource {
 
 class PartyTemplateServerDataSourceImpl
     implements PartyTemplateServerDataSource {
-  final SupabaseClient _supabaseClient;
 
   PartyTemplateServerDataSourceImpl({required SupabaseClient supabaseClient})
       : _supabaseClient = supabaseClient;
+  final SupabaseClient _supabaseClient;
 
   @override
   Future<TemplateVersionEntity> getTemplateVersion() async {

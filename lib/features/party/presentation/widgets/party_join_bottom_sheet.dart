@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
+import 'package:mobi_party_link/features/party/domain/entities/party_member_entity.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_card.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/party_provider.dart';
 import 'package:mobi_party_link/core/services/profile_service.dart';
 import 'package:mobi_party_link/core/di/injection.dart';
 import 'package:mobi_party_link/features/notification/presentation/providers/notification_provider.dart';
 import 'package:mobi_party_link/features/notification/presentation/providers/notification_settings_provider.dart';
 import 'package:mobi_party_link/features/party/presentation/providers/job_provider.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
 
 class PartyJoinBottomSheet extends ConsumerStatefulWidget {
-  final PartyEntity party;
-  final VoidCallback? onProfileSaved;
-
   const PartyJoinBottomSheet({
     super.key,
     required this.party,
     this.onProfileSaved,
   });
+  final PartyEntity party;
+  final VoidCallback? onProfileSaved;
 
   @override
   ConsumerState<PartyJoinBottomSheet> createState() =>
@@ -121,7 +124,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
@@ -184,7 +187,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
   }
 
   Widget _buildPartyCard() {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
@@ -484,7 +487,7 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
                 _saveProfile = value;
               });
             },
-            activeColor: Colors.green,
+            activeThumbColor: Colors.green,
             activeTrackColor: Colors.green.withOpacity(0.3),
             inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
             inactiveTrackColor: Theme.of(context).dividerColor,
@@ -652,6 +655,49 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
     return 'dps';
   }
 
+  /// FCM 토큰 가져오기 (실패 시 더미 토큰 사용)
+  Future<String> _getFcmToken() async {
+    try {
+      // 현재 권한 상태 확인
+      final settings =
+          await FirebaseMessaging.instance.getNotificationSettings();
+
+      // 권한이 없으면 요청
+      if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
+        final newSettings = await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+
+        if (newSettings.authorizationStatus != AuthorizationStatus.authorized &&
+            newSettings.authorizationStatus !=
+                AuthorizationStatus.provisional) {
+          print('❌ FCM 권한이 없음: ${newSettings.authorizationStatus}');
+          return 'dummy_fcm_token_${DateTime.now().millisecondsSinceEpoch}';
+        }
+      } else if (settings.authorizationStatus !=
+              AuthorizationStatus.authorized &&
+          settings.authorizationStatus != AuthorizationStatus.provisional) {
+        print('❌ FCM 권한이 없음: ${settings.authorizationStatus}');
+        return 'dummy_fcm_token_${DateTime.now().millisecondsSinceEpoch}';
+      }
+
+      // 토큰 가져오기
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null && token.isNotEmpty) {
+        print('✅ FCM 토큰 획득 성공: ${token.substring(0, 20)}...');
+        return token;
+      } else {
+        print('⚠️ FCM 토큰이 null 또는 빈 문자열');
+        return 'dummy_fcm_token_${DateTime.now().millisecondsSinceEpoch}';
+      }
+    } catch (e) {
+      print('❌ FCM 토큰 가져오기 실패: $e');
+      return 'dummy_fcm_token_${DateTime.now().millisecondsSinceEpoch}';
+    }
+  }
+
   Future<void> _joinParty() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -692,8 +738,38 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
         await ProfileService.saveProfile(profile);
       }
 
-      // TODO: 파티 참여 로직 구현
-      await Future.delayed(const Duration(seconds: 1)); // 임시 딜레이
+      // 1. userId 가져오기
+      final authService = ref.read(authServiceProvider);
+      final userId = await authService.ensureUserId();
+      print('✅ 파티 참여 userId: $userId');
+
+      // 2. jobId 변환
+      final jobId = await ref.read(jobNameToIdProvider(_selectedJob).future);
+      print('✅ 직업 변환: $_selectedJob → $jobId');
+
+      // 3. FCM 토큰 가져오기
+      final fcmToken = await _getFcmToken();
+      print('✅ FCM 토큰: ${fcmToken.substring(0, 20)}...');
+
+      // 4. PartyMemberEntity 생성
+      final member = PartyMemberEntity(
+        id: '', // Supabase가 UUID 자동 생성
+        userId: userId,
+        partyId: widget.party.id,
+        nickname: _nicknameController.text.trim(),
+        jobId: jobId,
+        job: _selectedJob,
+        power: int.tryParse(_powerController.text) ?? 0,
+        joinedAt: DateTime.now(),
+        fcmToken: fcmToken,
+      );
+
+      // 5. 파티 참여 요청
+      print('🔄 파티 참여 요청 시작: ${widget.party.name}');
+      final partyDetailNotifier =
+          ref.read(partyDetailNotifierProvider(widget.party.id).notifier);
+      await partyDetailNotifier.joinParty(member);
+      print('✅ 파티 참여 성공: ${widget.party.name}');
 
       // 파티 참여 성공 시 알림 예약
       final minutesBefore =
@@ -709,7 +785,14 @@ class _PartyJoinBottomSheetState extends ConsumerState<PartyJoinBottomSheet> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context);
+
+        // 참가한 파티 목록 새로고침
+        ref.invalidate(joinedPartiesProvider);
+        ref.invalidate(myPartiesProvider);
+        print('✅ 참가한 파티 목록 새로고침');
+
+        Navigator.pop(context, true); // 성공 결과 전달
+
         // 프로필 저장 후 콜백 호출
         if (!_hasExistingProfile && _saveProfile) {
           widget.onProfileSaved?.call();

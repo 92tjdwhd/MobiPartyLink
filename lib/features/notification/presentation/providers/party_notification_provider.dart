@@ -4,12 +4,12 @@ import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart
 
 /// 파티 알림 상태 관리 Provider
 class PartyNotificationNotifier extends StateNotifier<PartyNotificationState> {
-  final NotificationService _notificationService;
 
   PartyNotificationNotifier(this._notificationService)
       : super(const PartyNotificationState()) {
     _initialize();
   }
+  final NotificationService _notificationService;
 
   /// 초기화
   Future<void> _initialize() async {
@@ -279,11 +279,6 @@ class PartyNotificationNotifier extends StateNotifier<PartyNotificationState> {
 
 /// 파티 알림 상태
 class PartyNotificationState {
-  final int notificationMinutesBefore;
-  final List<PartyEntity> scheduledParties;
-  final List<PartyEntity> joinedParties;
-  final bool isLoading;
-  final String? error;
 
   const PartyNotificationState({
     this.notificationMinutesBefore = 5,
@@ -292,6 +287,11 @@ class PartyNotificationState {
     this.isLoading = true,
     this.error,
   });
+  final int notificationMinutesBefore;
+  final List<PartyEntity> scheduledParties;
+  final List<PartyEntity> joinedParties;
+  final bool isLoading;
+  final String? error;
 
   PartyNotificationState copyWith({
     int? notificationMinutesBefore,

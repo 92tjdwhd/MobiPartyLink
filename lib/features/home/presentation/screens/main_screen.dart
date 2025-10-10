@@ -3,12 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_recruitment_bottom_sheet.dart';
-import 'package:mobi_party_link/core/services/profile_service.dart';
 import 'package:mobi_party_link/features/profile/presentation/widgets/profile_setup_bottom_sheet.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_management_bottom_sheet.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_info_bottom_sheet.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_edit_bottom_sheet.dart';
-import 'package:mobi_party_link/features/notification/presentation/screens/notification_settings_screen.dart';
 import 'package:mobi_party_link/features/profile/presentation/providers/profile_provider.dart';
 import 'package:mobi_party_link/features/profile/presentation/providers/profile_display_provider.dart';
 import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
@@ -22,6 +20,7 @@ import 'package:mobi_party_link/core/services/data_sync_service.dart';
 import 'package:mobi_party_link/core/di/injection.dart';
 import 'package:mobi_party_link/core/services/kakao_share_service.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_join_bottom_sheet.dart';
+import 'package:mobi_party_link/shared/widgets/job_icon_widget.dart';
 import 'package:mobi_party_link/main.dart' as app;
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -100,15 +99,22 @@ class _MainScreenState extends ConsumerState<MainScreen>
             SnackBar(content: Text('파티를 찾을 수 없습니다: ${failure.message}')),
           );
         },
-        (party) {
+        (party) async {
           if (party != null) {
             // 파티 참가 바텀시트 표시
-            showModalBottomSheet(
+            final result = await showModalBottomSheet<bool>(
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
               builder: (context) => PartyJoinBottomSheet(party: party),
             );
+
+            // 참여 성공 시 파티 목록 새로고침
+            if (result == true && mounted) {
+              ref.invalidate(joinedPartiesProvider);
+              ref.invalidate(myPartiesProvider);
+              print('✅ Deep Link 파티 참여 후 목록 새로고침');
+            }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('파티 정보를 찾을 수 없습니다')),
@@ -126,30 +132,13 @@ class _MainScreenState extends ConsumerState<MainScreen>
 
   /// 앱 초기화
   Future<void> _initializeApp() async {
-    // 1. FCM 플래그 기반 데이터 동기화 (백그라운드)
-    _syncDataWithFcm();
+    // 데이터 동기화는 스플래시 화면에서 처리됨
 
-    // 2. 권한 체크
+    // 1. 권한 체크
     await _checkAndRequestPermissions();
 
-    // 3. 파티 알림 초기화
+    // 2. 파티 알림 초기화
     await _initializePartyNotifications();
-  }
-
-  /// FCM 플래그 기반 데이터 동기화
-  Future<void> _syncDataWithFcm() async {
-    try {
-      final dataSyncService = DataSyncService(
-        jobRepository: ref.read(jobRepositoryProvider),
-        templateRepository: ref.read(partyTemplateRepositoryProvider),
-      );
-
-      // FCM 플래그만 확인! (서버 요청 X, 플래그 있을 때만 다운로드)
-      await dataSyncService.fcmSmartSyncJobs();
-      await dataSyncService.fcmSmartSyncTemplates();
-    } catch (e) {
-      print('❌ FCM 기반 동기화 에러: $e');
-    }
   }
 
   /// 파티 알림 초기화
@@ -398,22 +387,16 @@ class _MainScreenState extends ConsumerState<MainScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 32,
-                  height: 32,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? const Color(0xFF76769A)
-                        : Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: Theme.of(context).dividerColor,
                       width: 1,
                     ),
                   ),
-                  child: const Icon(
-                    Icons.person_rounded,
-                    color: Colors.white,
-                    size: 18,
+                  child: JobIconWidget(
+                    jobId: profileDisplay.jobId,
+                    size: 32,
                   ),
                 ),
                 const SizedBox(width: 12),

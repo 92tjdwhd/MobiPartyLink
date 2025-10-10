@@ -23,10 +23,10 @@ abstract class PartyTemplateRemoteDataSource {
 
 class PartyTemplateRemoteDataSourceImpl
     implements PartyTemplateRemoteDataSource {
-  final SupabaseClient _supabaseClient;
 
   PartyTemplateRemoteDataSourceImpl({required SupabaseClient supabaseClient})
       : _supabaseClient = supabaseClient;
+  final SupabaseClient _supabaseClient;
 
   @override
   Future<List<PartyTemplateEntity>> getTemplates() async {

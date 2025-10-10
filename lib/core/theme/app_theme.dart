@@ -67,7 +67,7 @@ class AppTheme {
       ),
       dividerColor: const Color(0xFFE0E0E0),
       shadowColor: Colors.black.withOpacity(0.1),
-      tabBarTheme: TabBarThemeData(
+      tabBarTheme: const TabBarThemeData(
         labelColor: Colors.black87,
         unselectedLabelColor: Colors.black26,
         indicatorColor: primaryColor,
@@ -88,8 +88,6 @@ class AppTheme {
         onError: Colors.white,
         surface: Color(0xFF121212),
         onSurface: Colors.white,
-        background: Color(0xFF121212),
-        onBackground: Colors.white,
       ),
       scaffoldBackgroundColor: const Color(0xFF121212),
       cardColor: const Color(0xFF1E1E1E),
@@ -144,7 +142,7 @@ class AppTheme {
       ),
       dividerColor: const Color(0xFF333333),
       shadowColor: Colors.black.withOpacity(0.3),
-      tabBarTheme: TabBarThemeData(
+      tabBarTheme: const TabBarThemeData(
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white38,
         indicatorColor: primaryColor,

@@ -11,28 +11,35 @@ final mainProfileDisplayProvider =
   final profile = await ProfileService.getMainProfile();
   if (profile == null) return null;
 
-  // jobId → job 이름 변환
+  // jobId → job 이름 및 아이콘 URL 변환
   String? jobName;
+  String? iconUrl;
   if (profile.jobId != null) {
     jobName = await ref.read(jobIdToNameProvider(profile.jobId!).future);
+    iconUrl = await ref.read(jobIdToIconUrlProvider(profile.jobId!).future);
   }
 
   return MainProfileDisplay(
     nickname: profile.nickname,
+    jobId: profile.jobId,
     jobName: jobName ?? '미설정',
+    iconUrl: iconUrl,
     power: profile.power ?? 0,
   );
 });
 
 /// 메인 프로필 표시용 데이터 클래스
 class MainProfileDisplay {
-  final String nickname;
-  final String jobName; // 직업 이름 (예: "전사")
-  final int power;
-
   MainProfileDisplay({
     required this.nickname,
+    this.jobId,
     required this.jobName,
+    this.iconUrl,
     required this.power,
   });
+  final String nickname;
+  final String? jobId; // 직업 ID (예: "warrior")
+  final String jobName; // 직업 이름 (예: "전사")
+  final String? iconUrl; // 직업 아이콘 URL
+  final int power;
 }

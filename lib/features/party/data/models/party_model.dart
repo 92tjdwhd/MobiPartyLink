@@ -62,7 +62,7 @@ class PartyModel with _$PartyModel {
         status: entity.status,
         creatorId: entity.creatorId,
         members:
-            entity.members.map((e) => PartyMemberModel.fromEntity(e)).toList(),
+            entity.members.map(PartyMemberModel.fromEntity).toList(),
         createdAt: entity.createdAt,
         updatedAt: entity.updatedAt,
       );
@@ -70,7 +70,7 @@ class PartyModel with _$PartyModel {
 
 extension PartyModelX on PartyModel {
   PartyEntity toEntity() {
-    print('🔍 PartyModel.toEntity(): ${name}, members: ${members.length}개');
+    print('🔍 PartyModel.toEntity(): $name, members: ${members.length}개');
     final memberEntities = members.map((e) => e.toEntity()).toList();
     print('🔍 변환된 memberEntities: ${memberEntities.length}개');
 

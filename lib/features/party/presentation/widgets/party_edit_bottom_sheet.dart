@@ -6,12 +6,12 @@ import 'package:mobi_party_link/core/constants/party_templates.dart';
 import 'package:mobi_party_link/core/constants/party_constants.dart';
 
 class PartyEditBottomSheet extends ConsumerStatefulWidget {
-  final PartyEntity party;
 
   const PartyEditBottomSheet({
     super.key,
     required this.party,
   });
+  final PartyEntity party;
 
   @override
   ConsumerState<PartyEditBottomSheet> createState() =>
@@ -79,11 +79,11 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),
@@ -295,7 +295,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedCategory.isEmpty ? null : _selectedCategory,
+          initialValue: _selectedCategory.isEmpty ? null : _selectedCategory,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -354,7 +354,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedDifficulty.isEmpty ? null : _selectedDifficulty,
+          initialValue: _selectedDifficulty.isEmpty ? null : _selectedDifficulty,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -458,7 +458,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
-          value: _maxMembers,
+          initialValue: _maxMembers,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -525,7 +525,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                   _requirePower = value;
                 });
               },
-              activeColor: Colors.green,
+              activeThumbColor: Colors.green,
               activeTrackColor: Colors.green.withOpacity(0.3),
               inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
               inactiveTrackColor: Theme.of(context).dividerColor,
@@ -628,7 +628,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                   _requireJob = value;
                 });
               },
-              activeColor: Colors.green,
+              activeThumbColor: Colors.green,
               activeTrackColor: Colors.green.withOpacity(0.3),
               inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
               inactiveTrackColor: Theme.of(context).dividerColor,
@@ -661,7 +661,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
                   _requireJobCategory = value;
                 });
               },
-              activeColor: Colors.green,
+              activeThumbColor: Colors.green,
               activeTrackColor: Colors.green.withOpacity(0.3),
               inactiveThumbColor: Theme.of(context).textTheme.bodyMedium?.color,
               inactiveTrackColor: Theme.of(context).dividerColor,
@@ -716,7 +716,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
-          value: value,
+          initialValue: value,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -783,7 +783,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('컨텐츠 선택'),
+        title: const Text('컨텐츠 선택'),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -865,7 +865,7 @@ class _PartyEditBottomSheetState extends ConsumerState<PartyEditBottomSheet> {
             builder: (context) => AlertDialog(
               title: const Text('직업 제한 오류'),
               content: Text(
-                '직업 제한 합계(${totalJobLimit}명)와 파티 인원수(${_maxMembers}명)가 일치하지 않습니다.\n\n직업 제한 합계를 ${_maxMembers}명으로 맞춰주세요.',
+                '직업 제한 합계($totalJobLimit명)와 파티 인원수($_maxMembers명)가 일치하지 않습니다.\n\n직업 제한 합계를 $_maxMembers명으로 맞춰주세요.',
               ),
               actions: [
                 TextButton(

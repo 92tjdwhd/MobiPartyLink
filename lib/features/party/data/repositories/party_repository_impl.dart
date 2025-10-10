@@ -202,57 +202,26 @@ class PartyRepositoryImpl implements PartyRepository {
       final userId = await authService.ensureUserId();
       print('✅ 파티 참가 userId: $userId');
 
-      // 2. 로컬 프로필 가져오기
-      var profile = await ProfileService.getMainProfile();
-      if (profile == null) {
-        // 메인 프로필이 없으면 프로필 리스트에서 첫 번째 가져오기
-        final profiles = await ProfileService.getProfileList();
-        if (profiles.isEmpty) {
-          return const Left(ServerFailure(message: '프로필을 먼저 설정해주세요'));
-        }
-        // 첫 번째 프로필을 메인으로 설정
-        await ProfileService.setMainProfile(profiles.first.id);
-        profile = profiles.first;
-        print('✅ 첫 번째 프로필을 메인으로 설정: ${profile.nickname}');
-      }
-
-      // 3. FCM 토큰 가져오기 (실패 시 더미 토큰 사용)
-      String? fcmToken;
-      try {
-        fcmToken = await FirebaseMessaging.instance.getToken();
-        print('✅ FCM 토큰: ${fcmToken?.substring(0, 20)}...');
-      } catch (e) {
-        fcmToken = 'dummy_fcm_token_${DateTime.now().millisecondsSinceEpoch}';
-        print('⚠️ FCM 토큰 가져오기 실패, 더미 토큰 사용: $e');
-      }
-
-      // 4. 직업 ID → 직업 이름 변환
-      String? jobName;
-      final profileJobId = profile.jobId;
-      if (profileJobId != null) {
-        final jobs = await LocalStorageService.getJobs();
-        if (jobs != null && jobs.isNotEmpty) {
-          try {
-            final job = jobs.firstWhere((j) => j.id == profileJobId);
-            jobName = job.name;
-          } catch (e) {
-            jobName = jobs.first.name;
-          }
+      // 2. FCM 토큰 가져오기 (member에 이미 있으면 사용, 없으면 새로 가져오기)
+      String? fcmToken = member.fcmToken;
+      if (fcmToken == null || fcmToken.isEmpty) {
+        try {
+          fcmToken = await FirebaseMessaging.instance.getToken();
+          print('✅ FCM 토큰: ${fcmToken?.substring(0, 20)}...');
+        } catch (e) {
+          fcmToken = 'dummy_fcm_token_${DateTime.now().millisecondsSinceEpoch}';
+          print('⚠️ FCM 토큰 가져오기 실패, 더미 토큰 사용: $e');
         }
       }
 
-      // 5. 멤버 정보 업데이트
+      // 3. 멤버 정보 업데이트 (전달받은 member 정보 우선 사용)
       final updatedMember = member.copyWith(
         userId: userId,
-        nickname: profile.nickname,
-        jobId: profile.jobId, // 직업 ID (예: "varechar")
-        job: jobName, // 직업 이름 (예: "바처")
-        power: profile.power,
         fcmToken: fcmToken,
         joinedAt: DateTime.now(),
       );
 
-      // 6. Supabase에 저장
+      // 4. Supabase에 저장
       if (!await networkInfo.isConnected) {
         return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
       }

@@ -33,7 +33,7 @@ class _NotificationSettingsScreenState
     if (!status.isGranted) {
       // 권한이 없으면 다이얼로그 표시
       final granted = await showPermissionDialog(context);
-      if (granted == true) {
+      if (granted ?? false) {
         // 권한이 허용된 경우 스낵바 표시
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -123,7 +123,7 @@ class _NotificationSettingsScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('알림 설정이 ${_selectedMinutes}분 전으로 변경되었습니다'),
+            content: Text('알림 설정이 $_selectedMinutes분 전으로 변경되었습니다'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),

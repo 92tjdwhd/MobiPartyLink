@@ -14,10 +14,10 @@ abstract class JobRemoteDataSource {
 }
 
 class JobRemoteDataSourceImpl implements JobRemoteDataSource {
-  final SupabaseClient _supabaseClient;
 
   JobRemoteDataSourceImpl({required SupabaseClient supabaseClient})
       : _supabaseClient = supabaseClient;
+  final SupabaseClient _supabaseClient;
 
   @override
   Future<List<JobCategoryEntity>> getJobCategories() async {
@@ -83,7 +83,7 @@ class JobRemoteDataSourceImpl implements JobRemoteDataSource {
       return JobModel.fromJson(response).toEntity();
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
-        throw ServerException(message: '직업을 찾을 수 없습니다');
+        throw const ServerException(message: '직업을 찾을 수 없습니다');
       }
       throw ServerException(message: e.message);
     } catch (e) {

@@ -3,19 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_member_entity.dart';
 import 'package:mobi_party_link/core/di/injection.dart';
-import 'package:mobi_party_link/core/services/fcm_push_service.dart';
-import 'package:mobi_party_link/core/data/mock_party_data.dart';
 import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_card.dart';
-import 'package:mobi_party_link/core/utils/party_utils.dart';
+import 'package:mobi_party_link/shared/widgets/job_icon_widget.dart';
 
 class PartyManagementBottomSheet extends ConsumerStatefulWidget {
-  final PartyEntity party;
-
   const PartyManagementBottomSheet({
     super.key,
     required this.party,
   });
+  final PartyEntity party;
 
   @override
   ConsumerState<PartyManagementBottomSheet> createState() =>
@@ -30,8 +27,8 @@ class _PartyManagementBottomSheetState
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
@@ -140,7 +137,7 @@ class _PartyManagementBottomSheetState
           ],
         ),
         const SizedBox(height: 16),
-        ...widget.party.members.map((member) => _buildMemberCard(member)),
+        ...widget.party.members.map(_buildMemberCard),
       ],
     );
   }
@@ -170,21 +167,8 @@ class _PartyManagementBottomSheetState
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isLeader
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).colorScheme.secondary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(
-              isLeader ? Icons.star : Icons.person,
-              color: Theme.of(context).cardColor,
-              size: 20,
-            ),
-          ),
+          // 모든 멤버 직업 아이콘 사용
+          _buildMemberJobIcon(member),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -213,7 +197,7 @@ class _PartyManagementBottomSheetState
                           '파티장',
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -251,6 +235,17 @@ class _PartyManagementBottomSheetState
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMemberJobIcon(PartyMemberEntity member) {
+    return JobIconWidget(
+      jobId: member.jobId,
+      size: 40,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF76769A)
+          : Theme.of(context).primaryColor,
+      fallbackIconColor: Theme.of(context).cardColor,
     );
   }
 
@@ -322,10 +317,11 @@ class _PartyManagementBottomSheetState
         (failure) {
           throw Exception(failure.message);
         },
-        (_) {
+        (_) async {
           print('✅ 멤버 강퇴 성공: ${member.nickname}');
 
-          // 파티 리스트 새로고침
+          // 짧은 딜레이 후 파티 리스트 새로고침 (Supabase 반영 대기)
+          await Future.delayed(const Duration(milliseconds: 500));
           refreshPartyList(ref);
 
           if (mounted) {
@@ -421,7 +417,7 @@ class _PartyManagementBottomSheetState
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                 content: Text('파티가 삭제되었습니다'),
                 backgroundColor: Colors.green,
               ),

@@ -5,7 +5,7 @@ import 'package:mobi_party_link/features/profile/presentation/providers/profile_
 import 'package:mobi_party_link/features/profile/presentation/widgets/profile_setup_bottom_sheet.dart';
 import 'package:mobi_party_link/features/profile/presentation/widgets/profile_edit_bottom_sheet.dart';
 import 'package:mobi_party_link/features/party/presentation/providers/job_provider.dart';
-import 'package:mobi_party_link/core/services/profile_service.dart';
+import 'package:mobi_party_link/shared/widgets/job_icon_widget.dart';
 
 class ProfileManagementScreen extends ConsumerStatefulWidget {
   const ProfileManagementScreen({super.key});
@@ -74,7 +74,7 @@ class _ProfileManagementScreenState
                     : Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(60),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.person_add_rounded,
                 color: Colors.white,
                 size: 60,
@@ -196,21 +196,7 @@ class _ProfileManagementScreenState
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF76769A)
-                : Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: const Icon(
-            Icons.person_rounded,
-            color: Colors.white,
-            size: 24,
-          ),
-        ),
+        leading: _buildProfileJobIcon(profile),
         title: Consumer(
           builder: (context, ref, child) {
             final mainProfileId = ref.watch(mainProfileIdProvider);
@@ -220,7 +206,7 @@ class _ProfileManagementScreenState
               children: [
                 Expanded(
                   child: Text(
-                    profile.nickname ?? '프로필 ${index + 1}',
+                    profile.nickname,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -262,7 +248,7 @@ class _ProfileManagementScreenState
                   ref.watch(jobIdToNameProvider(profile.jobId!));
               return jobNameAsync.when(
                 data: (jobName) => Text(
-                  '${jobName ?? '직업 미설정'} • ${profile.power ?? '파워 미설정'}',
+                  '${jobName ?? '직업 미설정'} • ${profile.power ?? 0}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -392,6 +378,13 @@ class _ProfileManagementScreenState
     );
   }
 
+  Widget _buildProfileJobIcon(UserProfile profile) {
+    return JobIconWidget(
+      jobId: profile.jobId,
+      size: 48,
+    );
+  }
+
   void _showAddProfileSheet() {
     showModalBottomSheet(
       context: context,
@@ -401,7 +394,7 @@ class _ProfileManagementScreenState
     );
   }
 
-  void _setMainProfile(UserProfile profile) async {
+  Future<void> _setMainProfile(UserProfile profile) async {
     try {
       final success = await ProfileService.setMainProfile(profile.id);
 
@@ -454,7 +447,7 @@ class _ProfileManagementScreenState
           ),
         ),
         content: Text(
-          '${profile.nickname ?? '이 프로필'}을(를) 삭제하시겠습니까?',
+          '${profile.nickname}을(를) 삭제하시겠습니까?',
           style: TextStyle(
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
@@ -487,7 +480,7 @@ class _ProfileManagementScreenState
     );
   }
 
-  void _deleteProfile(UserProfile profile) async {
+  Future<void> _deleteProfile(UserProfile profile) async {
     try {
       final success = await ProfileService.deleteProfileFromList(profile.id);
 
@@ -498,7 +491,7 @@ class _ProfileManagementScreenState
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${profile.nickname ?? '프로필'}이 삭제되었습니다'),
+              content: Text('${profile.nickname}이 삭제되었습니다'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );

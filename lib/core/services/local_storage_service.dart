@@ -19,7 +19,7 @@ class LocalStorageService {
   /// 직업 데이터 저장
   static Future<void> saveJobs(List<JobEntity> jobs) async {
     final prefs = await SharedPreferences.getInstance();
-    final jobModels = jobs.map((job) => JobModel.fromEntity(job)).toList();
+    final jobModels = jobs.map(JobModel.fromEntity).toList();
     final jsonList = jobModels.map((job) => job.toJson()).toList();
     await prefs.setString(_jobsKey, jsonEncode(jsonList));
     await prefs.setString(
@@ -55,7 +55,7 @@ class LocalStorageService {
       List<PartyTemplateEntity> templates) async {
     final prefs = await SharedPreferences.getInstance();
     final templateModels =
-        templates.map((t) => PartyTemplateModel.fromEntity(t)).toList();
+        templates.map(PartyTemplateModel.fromEntity).toList();
     final jsonList = templateModels.map((t) => t.toJson()).toList();
     await prefs.setString(_partyTemplatesKey, jsonEncode(jsonList));
     await prefs.setString(

@@ -20,11 +20,11 @@ abstract class PartyTemplateLocalDataSource {
 }
 
 class PartyTemplateLocalDataSourceImpl implements PartyTemplateLocalDataSource {
-  final SharedPreferences _sharedPreferences;
 
   PartyTemplateLocalDataSourceImpl(
       {required SharedPreferences sharedPreferences})
       : _sharedPreferences = sharedPreferences;
+  final SharedPreferences _sharedPreferences;
 
   // 서버 템플릿 관련 키
   static const String _serverTemplatesKey = 'server_templates';

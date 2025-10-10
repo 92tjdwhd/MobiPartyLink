@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -7,6 +9,8 @@ Future<bool?> showPermissionDialog(BuildContext context) async {
     context: context,
     barrierDismissible: false, // 사용자가 외부 탭으로 닫을 수 없음
     builder: (BuildContext dialogContext) {
+      final bool isAndroid = !kIsWeb && Platform.isAndroid;
+
       return AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: Theme.of(context).dialogBackgroundColor,
@@ -41,7 +45,7 @@ Future<bool?> showPermissionDialog(BuildContext context) async {
             ),
             const SizedBox(height: 12),
             Text(
-              '• 알림 권한\n• 정확한 알림 예약 권한',
+              isAndroid ? '• 알림 권한\n• 정확한 알림 예약 권한' : '• 알림 권한',
               style: TextStyle(
                 fontSize: 14,
                 color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -70,9 +74,12 @@ Future<bool?> showPermissionDialog(BuildContext context) async {
               final notificationStatus =
                   await Permission.notification.request();
 
-              // 정확한 알림 예약 권한 요청 (Android 12+)
-              final exactAlarmStatus =
-                  await Permission.scheduleExactAlarm.request();
+              // Android에서만 정확한 알림 예약 권한 요청
+              PermissionStatus exactAlarmStatus = PermissionStatus.granted;
+              if (isAndroid) {
+                exactAlarmStatus =
+                    await Permission.scheduleExactAlarm.request();
+              }
 
               // 두 권한 모두 허용된 경우에만 성공
               if (notificationStatus.isGranted && exactAlarmStatus.isGranted) {

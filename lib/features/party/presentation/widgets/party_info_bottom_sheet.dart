@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_member_entity.dart';
 import 'package:mobi_party_link/features/party/presentation/widgets/party_card.dart';
-import 'package:mobi_party_link/core/utils/party_utils.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/party_provider.dart';
+import 'package:mobi_party_link/features/party/presentation/providers/party_list_provider.dart';
+import 'package:mobi_party_link/core/di/injection.dart';
+import 'package:mobi_party_link/shared/widgets/job_icon_widget.dart';
 
 class PartyInfoBottomSheet extends ConsumerStatefulWidget {
-  final PartyEntity party;
-
   const PartyInfoBottomSheet({
     super.key,
     required this.party,
   });
+  final PartyEntity party;
 
   @override
   ConsumerState<PartyInfoBottomSheet> createState() =>
@@ -25,8 +27,8 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
@@ -48,6 +50,39 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
                   _buildPartyCard(),
                   const SizedBox(height: 24),
                   _buildMembersSection(),
+                  const SizedBox(height: 24),
+                  FutureBuilder<bool>(
+                    future: _isCreator(),
+                    builder: (context, snapshot) {
+                      final isCreator = snapshot.data ?? true;
+                      // 파티장이 아닐 때만 나가기 버튼 표시
+                      if (!isCreator) {
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _showLeaveConfirmDialog,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFF3B30),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              '파티 나가기',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                 ],
               ),
             ),
@@ -131,7 +166,7 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
           ],
         ),
         const SizedBox(height: 16),
-        ...widget.party.members.map((member) => _buildMemberCard(member)),
+        ...widget.party.members.map(_buildMemberCard),
       ],
     );
   }
@@ -161,21 +196,8 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isLeader
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).colorScheme.secondary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(
-              isLeader ? Icons.star : Icons.person,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
+          // 모든 멤버 직업 아이콘 사용
+          _buildMemberJobIcon(member),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -200,11 +222,11 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
                           color: Theme.of(context).primaryColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
+                        child: Text(
                           '파티장',
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -236,6 +258,16 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
     );
   }
 
+  Widget _buildMemberJobIcon(PartyMemberEntity member) {
+    return JobIconWidget(
+      jobId: member.jobId,
+      size: 40,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF76769A)
+          : Theme.of(context).primaryColor,
+    );
+  }
+
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
@@ -254,6 +286,104 @@ class _PartyInfoBottomSheetState extends ConsumerState<PartyInfoBottomSheet> {
         return '만료됨';
       case PartyStatus.cancelled:
         return '취소';
+    }
+  }
+
+  /// 현재 사용자가 파티장인지 확인
+  Future<bool> _isCreator() async {
+    final authService = ref.read(authServiceProvider);
+    final userId = await authService.getUserId();
+    return userId != null && widget.party.creatorId == userId;
+  }
+
+  /// 파티 나가기 확인 다이얼로그
+  void _showLeaveConfirmDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).cardColor,
+        title: Text(
+          '파티 나가기',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge?.color,
+          ),
+        ),
+        content: Text(
+          '정말 파티에서 나가시겠습니까?',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              '취소',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _leaveParty();
+            },
+            child: const Text(
+              '나가기',
+              style: TextStyle(color: Color(0xFFFF3B30)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 파티 나가기 실행
+  Future<void> _leaveParty() async {
+    try {
+      final authService = ref.read(authServiceProvider);
+      final userId = await authService.getUserId();
+
+      if (userId == null) {
+        throw Exception('사용자 인증이 필요합니다');
+      }
+
+      print('🔄 파티 나가기 시작: ${widget.party.name}');
+
+      // PartyDetailNotifier를 통해 파티 나가기 요청
+      final notifier =
+          ref.read(partyDetailNotifierProvider(widget.party.id).notifier);
+      await notifier.leaveParty(userId);
+
+      print('✅ 파티 나가기 성공: ${widget.party.name}');
+
+      if (mounted) {
+        // 참가한 파티 목록 새로고침
+        ref.invalidate(joinedPartiesProvider);
+        ref.invalidate(myPartiesProvider);
+        print('✅ 파티 목록 새로고침');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('파티에서 나갔습니다'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // 바텀시트 닫기
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      print('❌ 파티 나가기 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('파티 나가기에 실패했습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

@@ -32,6 +32,6 @@ class NotificationNotifier extends _$NotificationNotifier {
 
   /// 예약된 알림 목록 조회
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    return await _notificationService.getPendingNotifications();
+    return _notificationService.getPendingNotifications();
   }
 }

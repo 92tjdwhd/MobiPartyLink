@@ -44,8 +44,23 @@ class PartyListNotifier extends _$PartyListNotifier {
 
   /// 파티 생성
   Future<void> createParty(PartyEntity party) async {
-    final createParty = ref.read(createPartyProvider);
-    final result = await createParty(party);
+    final createPartyUseCase = ref.read(createPartyProvider);
+    final result = await createPartyUseCase(
+      name: party.name,
+      startTime: party.startTime,
+      maxMembers: party.maxMembers,
+      contentType: party.contentType,
+      category: party.category,
+      difficulty: party.difficulty,
+      requireJob: party.requireJob,
+      requirePower: party.requirePower,
+      minPower: party.minPower,
+      maxPower: party.maxPower,
+      requireJobCategory: party.requireJobCategory,
+      tankLimit: party.tankLimit,
+      healerLimit: party.healerLimit,
+      dpsLimit: party.dpsLimit,
+    );
 
     result.fold(
       (failure) {
@@ -81,8 +96,11 @@ class PartyListNotifier extends _$PartyListNotifier {
 
 @riverpod
 class PartyDetailNotifier extends _$PartyDetailNotifier {
+  String? _partyId;
+
   @override
   Future<PartyEntity?> build(String partyId) async {
+    _partyId = partyId;
     final getPartyById = ref.read(getPartyByIdProvider);
     final result = await getPartyById(partyId);
     return result.fold(
@@ -96,7 +114,7 @@ class PartyDetailNotifier extends _$PartyDetailNotifier {
     state = const AsyncLoading();
 
     final getPartyById = ref.read(getPartyByIdProvider);
-    final result = await getPartyById(arg);
+    final result = await getPartyById(_partyId!);
 
     result.fold(
       (failure) {
@@ -111,7 +129,7 @@ class PartyDetailNotifier extends _$PartyDetailNotifier {
   /// 파티 참여
   Future<void> joinParty(PartyMemberEntity member) async {
     final joinParty = ref.read(joinPartyProvider);
-    final result = await joinParty(arg, member);
+    final result = await joinParty(_partyId!, member);
 
     result.fold(
       (failure) {
@@ -127,7 +145,7 @@ class PartyDetailNotifier extends _$PartyDetailNotifier {
   /// 파티 나가기
   Future<void> leaveParty(String userId) async {
     final leaveParty = ref.read(leavePartyProvider);
-    final result = await leaveParty(arg, userId);
+    final result = await leaveParty(_partyId!, userId);
 
     result.fold(
       (failure) {

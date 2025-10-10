@@ -15,7 +15,6 @@ import 'core/services/fcm_service.dart';
 import 'core/constants/kakao_constants.dart';
 import 'core/services/deep_link_service.dart';
 import 'firebase_options.dart';
-import 'features/notification/presentation/providers/notification_provider.dart';
 
 // Global Deep Link Service
 final deepLinkService = DeepLinkService();

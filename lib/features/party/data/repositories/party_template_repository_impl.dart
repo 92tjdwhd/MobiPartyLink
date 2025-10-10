@@ -8,15 +8,15 @@ import 'package:mobi_party_link/features/party/domain/entities/party_template_en
 import 'package:mobi_party_link/features/party/domain/repositories/party_template_repository.dart';
 
 class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
-  final PartyTemplateServerDataSource serverDataSource;
-  final PartyTemplateLocalDataSource localDataSource;
-  final NetworkInfo networkInfo;
 
   PartyTemplateRepositoryImpl({
     required this.serverDataSource,
     required this.localDataSource,
     required this.networkInfo,
   });
+  final PartyTemplateServerDataSource serverDataSource;
+  final PartyTemplateLocalDataSource localDataSource;
+  final NetworkInfo networkInfo;
 
   @override
   Future<Either<Failure, List<PartyTemplateEntity>>> getTemplates() async {
@@ -36,7 +36,7 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
         final localTemplates = await localDataSource.getCustomTemplates();
         return Right(localTemplates);
       } catch (e) {
-        return Left(CacheFailure(message: '로컬 템플릿을 불러올 수 없습니다'));
+        return const Left(CacheFailure(message: '로컬 템플릿을 불러올 수 없습니다'));
       }
     }
   }
@@ -54,7 +54,7 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 
@@ -65,7 +65,7 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
       final templates = await localDataSource.getCustomTemplates();
       return Right(templates);
     } catch (e) {
-      return Left(CacheFailure(message: '커스텀 템플릿을 불러올 수 없습니다'));
+      return const Left(CacheFailure(message: '커스텀 템플릿을 불러올 수 없습니다'));
     }
   }
 
@@ -85,7 +85,7 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 
@@ -112,7 +112,7 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 
@@ -123,7 +123,7 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
       await localDataSource.saveCustomTemplate(template);
       return const Right(null);
     } catch (e) {
-      return Left(CacheFailure(message: '커스텀 템플릿 저장에 실패했습니다'));
+      return const Left(CacheFailure(message: '커스텀 템플릿 저장에 실패했습니다'));
     }
   }
 
@@ -133,7 +133,7 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
       await localDataSource.deleteCustomTemplate(templateId);
       return const Right(null);
     } catch (e) {
-      return Left(CacheFailure(message: '커스텀 템플릿 삭제에 실패했습니다'));
+      return const Left(CacheFailure(message: '커스텀 템플릿 삭제에 실패했습니다'));
     }
   }
 
@@ -149,11 +149,11 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
       final allTemplates = await getTemplates();
 
       return allTemplates.fold(
-        (failure) => Left(failure),
+        Left.new,
         (templates) {
           final template = templates.firstWhere(
             (t) => t.id == templateId,
-            orElse: () => throw ServerException(message: '템플릿을 찾을 수 없습니다'),
+            orElse: () => throw const ServerException(message: '템플릿을 찾을 수 없습니다'),
           );
 
           // 템플릿 기반 파티 생성 로직은 PartyRepository에서 처리
@@ -177,7 +177,7 @@ class PartyTemplateRepositoryImpl implements PartyTemplateRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 }

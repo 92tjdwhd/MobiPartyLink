@@ -7,9 +7,9 @@ import '../entities/party_member_entity.dart';
 import '../repositories/party_repository.dart';
 
 class CreatePartyWithCategory {
-  final PartyRepository repository;
 
   CreatePartyWithCategory(this.repository);
+  final PartyRepository repository;
 
   Future<Either<Failure, PartyEntity>> call({
     required String partyName,

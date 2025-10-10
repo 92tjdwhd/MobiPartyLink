@@ -4,15 +4,22 @@ import 'package:go_router/go_router.dart';
 import '../../features/counter/presentation/screens/counter_screen.dart';
 import '../../features/home/presentation/screens/main_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/splash/presentation/screens/splash_screen.dart';
 
 class AppRouter {
+  static const String splash = '/splash';
   static const String main = '/';
   static const String counter = '/counter';
   static const String settings = '/settings';
 
   static final GoRouter router = GoRouter(
-    initialLocation: main,
+    initialLocation: splash,
     routes: [
+      GoRoute(
+        path: splash,
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: main,
         name: 'main',

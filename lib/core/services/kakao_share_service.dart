@@ -1,9 +1,29 @@
 import 'package:kakao_flutter_sdk_share/kakao_flutter_sdk_share.dart';
+import 'package:intl/intl.dart';
 import '../constants/kakao_constants.dart';
 import '../../features/party/domain/entities/party_entity.dart';
 
 /// 카카오톡 공유 서비스
 class KakaoShareService {
+  /// 날짜를 "MM월 dd일 HH:mm" 형식으로 포맷
+  static String _formatDateTime(DateTime dateTime) {
+    return DateFormat('M월 d일 HH:mm').format(dateTime);
+  }
+
+  /// 직업 제한 정보 텍스트 생성
+  static String _getJobLimitInfo(PartyEntity party) {
+    if (!party.requireJobCategory) {
+      return '';
+    }
+
+    final totalLimit = party.tankLimit + party.healerLimit + party.dpsLimit;
+    if (totalLimit == 0) {
+      return '';
+    }
+
+    return '\n직업 제한: 탱커 ${party.tankLimit}, 힐러 ${party.healerLimit}, 딜러 ${party.dpsLimit}';
+  }
+
   /// 파티 링크를 카카오톡으로 공유
   static Future<bool> shareParty(PartyEntity party) async {
     try {
@@ -11,35 +31,56 @@ class KakaoShareService {
       final kakaoDeepLink =
           '${KakaoConstants.nativeAppKey}://kakaolink?partyId=${party.id}';
 
-      // 일반 Deep Link URL 생성
-      final deepLink =
-          '${KakaoConstants.deepLinkScheme}://${KakaoConstants.deepLinkHost}/${party.id}';
-
       // 웹 URL 생성 (앱이 설치되어 있으면 앱으로 리다이렉트)
-      // Firebase Dynamic Links 대신 직접 Deep Link 사용
       final webUrl = kakaoDeepLink;
 
-      // 최대 투력 표시 처리
-      final maxPowerText = party.maxPower != null
-          ? '투력 ${party.maxPower! ~/ 10000}만'
-          : '투력 30000만 이상';
+      // 직업 제한 정보
+      final jobLimitInfo = _getJobLimitInfo(party);
 
-      // 파티 정보 요약
-      final description =
-          '${party.contentType} · $maxPowerText · ${party.members.length}/${party.maxMembers}명';
-
-      // 카카오톡 공유 템플릿 생성
-      final template = FeedTemplate(
-        content: Content(
-          title: '🎉 ${party.name}',
-          description: description,
-          imageUrl: Uri.parse(
-              'https://mud-central.com/images/mabinogi_icon.png'), // 기본 이미지
-          link: Link(
-            mobileWebUrl: Uri.parse(webUrl),
-            webUrl: Uri.parse(webUrl),
-          ),
+      // 카카오톡 공유 템플릿 생성 (ListTemplate으로 변경)
+      final template = ListTemplate(
+        headerTitle: '모비링크 파티 초대',
+        headerLink: Link(
+          mobileWebUrl: Uri.parse(webUrl),
+          webUrl: Uri.parse(webUrl),
         ),
+        contents: [
+          Content(
+            title: party.name,
+            description: party.contentType,
+            imageUrl:
+                Uri.parse('https://mud-central.com/images/mabinogi_icon.png'),
+            link: Link(
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+            ),
+          ),
+          Content(
+            title: '모집 인원',
+            description: '${party.members.length}/${party.maxMembers}명',
+            link: Link(
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+            ),
+          ),
+          Content(
+            title: '시작 시간',
+            description: _formatDateTime(party.startTime),
+            link: Link(
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+            ),
+          ),
+          if (jobLimitInfo.isNotEmpty)
+            Content(
+              title: '직업 제한',
+              description: jobLimitInfo.trim(),
+              link: Link(
+                mobileWebUrl: Uri.parse(webUrl),
+                webUrl: Uri.parse(webUrl),
+              ),
+            ),
+        ],
         buttons: [
           Button(
             title: '파티 참가하기',
@@ -58,19 +99,19 @@ class KakaoShareService {
       );
 
       // 카카오톡 설치 여부 확인
-      bool isKakaoTalkSharingAvailable =
+      final bool isKakaoTalkSharingAvailable =
           await ShareClient.instance.isKakaoTalkSharingAvailable();
 
       if (isKakaoTalkSharingAvailable) {
         // 카카오톡으로 공유
-        Uri shareUri =
+        final Uri shareUri =
             await ShareClient.instance.shareDefault(template: template);
         await ShareClient.instance.launchKakaoTalk(shareUri);
         print('✅ 카카오톡 공유 성공: ${party.name}');
         return true;
       } else {
         // 카카오톡이 설치되지 않은 경우 웹 공유
-        Uri shareUrl =
+        final Uri shareUrl =
             await ShareClient.instance.shareDefault(template: template);
         await launchBrowserTab(shareUrl, popupOpen: true);
         print('✅ 웹 브라우저로 공유: ${party.name}');
@@ -89,54 +130,56 @@ class KakaoShareService {
       final kakaoDeepLink =
           '${KakaoConstants.nativeAppKey}://kakaolink?partyId=${party.id}';
 
-      // 일반 Deep Link URL 생성
-      final deepLink =
-          '${KakaoConstants.deepLinkScheme}://${KakaoConstants.deepLinkHost}/${party.id}';
-
       // 웹 URL 생성 (앱이 설치되어 있으면 앱으로 리다이렉트)
-      // Firebase Dynamic Links 대신 직접 Deep Link 사용
       final webUrl = kakaoDeepLink;
 
-      // 파티 상세 정보
-      final maxPowerText = party.maxPower != null
-          ? '투력 ${party.maxPower! ~/ 10000}만'
-          : '투력 30000만 이상';
-
-      final minPowerText = party.minPower != null
-          ? '투력 ${party.minPower! ~/ 10000}만'
-          : '투력 제한 없음';
-
       // 직업 제한 정보
-      String jobLimitText = '';
-      if (party.requireJobCategory) {
-        final totalLimit = party.tankLimit + party.healerLimit + party.dpsLimit;
-        if (totalLimit > 0) {
-          jobLimitText =
-              '\n직업 제한: 탱커 ${party.tankLimit}, 힐러 ${party.healerLimit}, 딜러 ${party.dpsLimit}';
-        }
-      }
+      final jobLimitInfo = _getJobLimitInfo(party);
 
-      final template = FeedTemplate(
-        content: Content(
-          title: '${party.name}',
-          description: '''
-📋 ${party.contentType}
-💪 $minPowerText ~ $maxPowerText
-👥 ${party.members.length}/${party.maxMembers}명$jobLimitText
-📝 파티원을 모집합니다!
-          '''
-              .trim(),
-          imageUrl:
-              Uri.parse('https://mud-central.com/images/mabinogi_icon.png'),
-          link: Link(
-            mobileWebUrl: Uri.parse(webUrl),
-            webUrl: Uri.parse(webUrl),
+      // 카카오톡 공유 템플릿 생성 (ListTemplate으로 변경)
+      final template = ListTemplate(
+        headerTitle: '모비링크 파티 초대',
+        headerLink: Link(
+          mobileWebUrl: Uri.parse(webUrl),
+          webUrl: Uri.parse(webUrl),
+        ),
+        contents: [
+          Content(
+            title: party.name,
+            description: party.contentType,
+            imageUrl:
+                Uri.parse('https://mud-central.com/images/mabinogi_icon.png'),
+            link: Link(
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+            ),
           ),
-        ),
-        social: Social(
-          likeCount: party.members.length,
-          commentCount: party.maxMembers - party.members.length,
-        ),
+          Content(
+            title: '모집 인원',
+            description: '${party.members.length}/${party.maxMembers}명',
+            link: Link(
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+            ),
+          ),
+          Content(
+            title: '시작 시간',
+            description: _formatDateTime(party.startTime),
+            link: Link(
+              mobileWebUrl: Uri.parse(webUrl),
+              webUrl: Uri.parse(webUrl),
+            ),
+          ),
+          if (jobLimitInfo.isNotEmpty)
+            Content(
+              title: '직업 제한',
+              description: jobLimitInfo.trim(),
+              link: Link(
+                mobileWebUrl: Uri.parse(webUrl),
+                webUrl: Uri.parse(webUrl),
+              ),
+            ),
+        ],
         buttons: [
           Button(
             title: '파티 참가하기',
@@ -151,33 +194,20 @@ class KakaoShareService {
               },
             ),
           ),
-          Button(
-            title: '앱에서 보기',
-            link: Link(
-              mobileWebUrl: Uri.parse(webUrl),
-              webUrl: Uri.parse(webUrl),
-              androidExecutionParams: {
-                'partyId': party.id,
-              },
-              iosExecutionParams: {
-                'partyId': party.id,
-              },
-            ),
-          ),
         ],
       );
 
-      bool isKakaoTalkSharingAvailable =
+      final bool isKakaoTalkSharingAvailable =
           await ShareClient.instance.isKakaoTalkSharingAvailable();
 
       if (isKakaoTalkSharingAvailable) {
-        Uri shareUri =
+        final Uri shareUri =
             await ShareClient.instance.shareDefault(template: template);
         await ShareClient.instance.launchKakaoTalk(shareUri);
         print('✅ 카카오톡 상세 공유 성공: ${party.name}');
         return true;
       } else {
-        Uri shareUrl =
+        final Uri shareUrl =
             await ShareClient.instance.shareDefault(template: template);
         await launchBrowserTab(shareUrl, popupOpen: true);
         print('✅ 웹 브라우저로 상세 공유: ${party.name}');

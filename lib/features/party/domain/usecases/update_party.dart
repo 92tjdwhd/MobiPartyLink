@@ -5,11 +5,11 @@ import '../entities/party_entity.dart';
 import '../repositories/party_repository.dart';
 
 class UpdateParty {
-  final PartyRepository repository;
 
   UpdateParty(this.repository);
+  final PartyRepository repository;
 
   Future<Either<Failure, PartyEntity>> call(PartyEntity party) async {
-    return await repository.updateParty(party);
+    return repository.updateParty(party);
   }
 }

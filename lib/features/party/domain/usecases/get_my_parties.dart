@@ -4,11 +4,11 @@ import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart
 import 'package:mobi_party_link/features/party/domain/repositories/party_repository.dart';
 
 class GetMyParties {
-  final PartyRepository repository;
 
   GetMyParties(this.repository);
+  final PartyRepository repository;
 
   Future<Either<Failure, List<PartyEntity>>> call() async {
-    return await repository.getMyParties();
+    return repository.getMyParties();
   }
 }

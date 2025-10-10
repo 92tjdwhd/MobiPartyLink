@@ -14,11 +14,11 @@ class PermissionState with _$PermissionState {
 }
 
 class PermissionNotifier extends StateNotifier<PermissionState> {
-  final PermissionService _permissionService;
 
   PermissionNotifier(this._permissionService) : super(const PermissionState()) {
     checkPermissions();
   }
+  final PermissionService _permissionService;
 
   Future<void> checkPermissions() async {
     final isNotificationGranted =

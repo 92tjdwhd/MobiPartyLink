@@ -42,3 +42,14 @@ final jobNameToIdProvider =
     return null;
   }
 });
+
+/// 직업 ID로 아이콘 URL 찾기
+final jobIdToIconUrlProvider =
+    FutureProvider.family<String?, String>((ref, jobId) async {
+  final jobs = await ref.watch(localJobsProvider.future);
+  try {
+    return jobs.firstWhere((job) => job.id == jobId).iconUrl;
+  } catch (e) {
+    return null;
+  }
+});

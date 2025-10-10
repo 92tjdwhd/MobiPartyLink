@@ -5,9 +5,9 @@ import '../entities/party_entity.dart';
 import '../repositories/party_repository.dart';
 
 class SearchParties {
-  final PartyRepository repository;
 
   SearchParties(this.repository);
+  final PartyRepository repository;
 
   Future<Either<Failure, List<PartyEntity>>> call({
     String? query,
@@ -18,7 +18,7 @@ class SearchParties {
     int? maxPower,
     PartyStatus? status,
   }) async {
-    return await repository.searchParties(
+    return repository.searchParties(
       query: query,
       contentType: contentType,
       requireJob: requireJob,

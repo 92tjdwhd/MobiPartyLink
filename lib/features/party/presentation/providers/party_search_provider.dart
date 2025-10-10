@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../domain/entities/party_entity.dart';
-import '../../domain/usecases/search_parties.dart';
 
 part 'party_search_provider.g.dart';
 

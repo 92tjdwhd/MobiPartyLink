@@ -5,12 +5,12 @@ import '../entities/party_member_entity.dart';
 import '../repositories/party_repository.dart';
 
 class JoinParty {
-  final PartyRepository repository;
 
   JoinParty(this.repository);
+  final PartyRepository repository;
 
   Future<Either<Failure, PartyMemberEntity>> call(
       String partyId, PartyMemberEntity member) async {
-    return await repository.joinParty(partyId, member);
+    return repository.joinParty(partyId, member);
   }
 }

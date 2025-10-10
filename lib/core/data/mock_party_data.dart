@@ -1,5 +1,4 @@
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
-import 'package:mobi_party_link/features/party/domain/entities/party_member_entity.dart';
 
 class MockPartyData {
   // 동적으로 생성된 파티들을 저장하는 리스트

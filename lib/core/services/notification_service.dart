@@ -7,9 +7,9 @@ import 'package:mobi_party_link/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
-  static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
+  static final NotificationService _instance = NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
@@ -78,7 +78,7 @@ class NotificationService {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_notificationMinutesKey, minutes);
-      Logger.info('알림 설정 저장 완료: ${minutes}분 전');
+      Logger.info('알림 설정 저장 완료: $minutes분 전');
     } catch (e) {
       Logger.error('알림 설정 저장 실패: $e');
     }
@@ -104,7 +104,7 @@ class NotificationService {
       }
 
       // 고유한 알림 ID 생성 (파티 ID + 시간 기반)
-      final notificationId = '${party.id}_${minutesBefore}'.hashCode;
+      final notificationId = '${party.id}_$minutesBefore'.hashCode;
 
       const androidDetails = AndroidNotificationDetails(
         'party_notifications',
@@ -143,7 +143,7 @@ class NotificationService {
       );
 
       Logger.info(
-          '파티 알림 예약 완료: ${party.name} - ${notificationTime} (${minutesBefore}분 전)');
+          '파티 알림 예약 완료: ${party.name} - $notificationTime ($minutesBefore분 전)');
     } catch (e) {
       Logger.error('파티 알림 예약 실패: $e');
     }
@@ -152,14 +152,14 @@ class NotificationService {
   /// 시간 텍스트 변환
   String _getTimeText(int minutes) {
     if (minutes < 60) {
-      return '${minutes}분 후';
+      return '$minutes분 후';
     } else {
       final hours = minutes ~/ 60;
       final remainingMinutes = minutes % 60;
       if (remainingMinutes == 0) {
-        return '${hours}시간 후';
+        return '$hours시간 후';
       } else {
-        return '${hours}시간 ${remainingMinutes}분 후';
+        return '$hours시간 $remainingMinutes분 후';
       }
     }
   }
@@ -169,7 +169,7 @@ class NotificationService {
     try {
       // 모든 알림 시간대에 대해 취소
       final currentMinutes = await getNotificationMinutesBefore();
-      final notificationId = '${party.id}_${currentMinutes}'.hashCode;
+      final notificationId = '${party.id}_$currentMinutes'.hashCode;
       await _localNotifications.cancel(notificationId);
       Logger.info('파티 알림 취소 완료: ${party.name}');
     } catch (e) {
@@ -203,7 +203,7 @@ class NotificationService {
       }
 
       Logger.info(
-          '전체 파티 알림 재등록 완료: ${parties.length}개 파티, ${minutesBefore}분 전');
+          '전체 파티 알림 재등록 완료: ${parties.length}개 파티, $minutesBefore분 전');
     } catch (e) {
       Logger.error('전체 파티 알림 재등록 실패: $e');
     }
@@ -220,7 +220,7 @@ class NotificationService {
       await rescheduleAllPartyNotifications(parties);
 
       Logger.info(
-          '알림 설정 변경 완료: ${newMinutesBefore}분 전, ${parties.length}개 파티 재등록');
+          '알림 설정 변경 완료: $newMinutesBefore분 전, ${parties.length}개 파티 재등록');
     } catch (e) {
       Logger.error('알림 설정 변경 실패: $e');
     }
@@ -330,7 +330,7 @@ class NotificationService {
       await _localNotifications.zonedSchedule(
         notificationId, // 고유한 알림 ID
         'Mobi Party Link 테스트',
-        '${minutes}분 후 테스트 알림입니다! 🎉',
+        '$minutes분 후 테스트 알림입니다! 🎉',
         scheduledTime,
         notificationDetails,
         payload: 'test_notification_scheduled',
@@ -346,8 +346,8 @@ class NotificationService {
         print('예약된 알림: ID=${notification.id}, 제목=${notification.title}');
       }
 
-      Logger.info('테스트 알림 예약 완료: ${minutes}분 후');
-      print('테스트 알림 예약 완료: ${minutes}분 후');
+      Logger.info('테스트 알림 예약 완료: $minutes분 후');
+      print('테스트 알림 예약 완료: $minutes분 후');
     } catch (e) {
       Logger.error('테스트 알림 예약 실패: $e');
       print('테스트 알림 예약 실패: $e');

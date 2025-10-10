@@ -4,11 +4,11 @@ import '../../../../core/error/failures.dart';
 import '../repositories/party_repository.dart';
 
 class LeaveParty {
-  final PartyRepository repository;
 
   LeaveParty(this.repository);
+  final PartyRepository repository;
 
   Future<Either<Failure, void>> call(String partyId, String userId) async {
-    return await repository.leaveParty(partyId, userId);
+    return repository.leaveParty(partyId, userId);
   }
 }

@@ -12,10 +12,10 @@ abstract class AuthRemoteDataSource {
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final SupabaseClient _supabaseClient;
 
   AuthRemoteDataSourceImpl({required SupabaseClient supabaseClient})
       : _supabaseClient = supabaseClient;
+  final SupabaseClient _supabaseClient;
 
   @override
   Future<AuthUserEntity?> getCurrentUser() async {
@@ -43,7 +43,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await _supabaseClient.auth.signInAnonymously();
 
       if (response.user == null) {
-        throw ServerException(message: '익명 로그인에 실패했습니다');
+        throw const ServerException(message: '익명 로그인에 실패했습니다');
       }
 
       final user = response.user!;

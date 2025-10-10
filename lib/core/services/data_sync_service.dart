@@ -2,17 +2,17 @@ import 'package:mobi_party_link/features/party/domain/repositories/job_repositor
 import 'package:mobi_party_link/features/party/domain/repositories/party_template_repository.dart';
 import 'package:mobi_party_link/core/services/local_storage_service.dart';
 import 'package:mobi_party_link/core/services/fcm_service.dart';
+import 'package:mobi_party_link/core/services/job_icon_service.dart';
 
 /// 데이터 동기화 서비스
 /// 서버의 직업, 템플릿 데이터를 로컬과 동기화합니다.
 class DataSyncService {
-  final JobRepository jobRepository;
-  final PartyTemplateRepository? templateRepository;
-
   DataSyncService({
     required this.jobRepository,
     this.templateRepository,
   });
+  final JobRepository jobRepository;
+  final PartyTemplateRepository? templateRepository;
 
   /// 직업 데이터 동기화
   /// 서버 버전이 로컬 버전보다 높으면 데이터를 다운로드하고 저장합니다.
@@ -65,6 +65,16 @@ class DataSyncService {
           // 5. 로컬에 저장
           await LocalStorageService.saveJobs(jobs);
           await LocalStorageService.saveJobsVersion(serverVersion);
+
+          // 6. 직업 아이콘 다운로드 (백그라운드)
+          try {
+            print('🎨 직업 아이콘 다운로드 시작...');
+            final iconCount = await JobIconService.downloadAllIcons(jobs);
+            print('✅ 직업 아이콘 $iconCount개 다운로드 완료');
+          } catch (e) {
+            print('⚠️ 아이콘 다운로드 실패 (직업 데이터는 정상 저장됨): $e');
+            // 아이콘 다운로드 실패해도 직업 데이터 동기화는 성공으로 처리
+          }
 
           print('🎉 직업 데이터 동기화 완료! (v$localVersion → v$serverVersion)');
           return true;
@@ -178,7 +188,7 @@ class DataSyncService {
   Future<Map<String, bool>> forceSync() async {
     print('🔄 강제 동기화 시작 (캐시 삭제)...');
     await LocalStorageService.clearAll();
-    return await syncAll();
+    return syncAll();
   }
 
   /// FCM 플래그 기반 스마트 동기화 - 직업
@@ -256,5 +266,94 @@ class DataSyncService {
       'jobs': jobsSynced,
       'templates': templatesSynced,
     };
+  }
+
+  /// 강제 직업 동기화 - 스플래시용 (무조건 서버 버전 체크)
+  Future<bool> forceSyncJobs() async {
+    try {
+      print('🔄 강제 직업 데이터 동기화 시작');
+
+      // 1. 로컬 버전 조회
+      final localVersion = await LocalStorageService.getJobsVersion();
+      print('📦 로컬 직업 버전: $localVersion');
+
+      // 2. 서버 버전 조회
+      final serverVersionResult = await jobRepository.getJobsVersion();
+      final serverVersion = serverVersionResult.fold(
+        (failure) {
+          print('⚠️ 서버 버전 조회 실패 - 로컬 데이터 사용');
+          return null;
+        },
+        (version) {
+          print('🌐 서버 직업 버전: $version');
+          return version;
+        },
+      );
+
+      if (serverVersion == null) {
+        print('⚠️ 서버 연결 실패 - 로컬 데이터로 진행');
+        return false;
+      }
+
+      // 3. 버전 비교
+      if (localVersion == serverVersion) {
+        print('✅ 직업 데이터 최신 버전 (동기화 불필요)');
+        return true;
+      }
+
+      // 4. 버전 다르면 동기화 (syncJobs 호출)
+      print('🔽 직업 데이터 다운로드 필요 (v$localVersion → v$serverVersion)');
+      return await syncJobs();
+    } catch (e) {
+      print('❌ 강제 직업 동기화 실패: $e');
+      return false;
+    }
+  }
+
+  /// 강제 템플릿 동기화 - 스플래시용 (무조건 서버 버전 체크)
+  Future<bool> forceSyncTemplates() async {
+    if (templateRepository == null) {
+      print('⚠️ 템플릿 Repository가 설정되지 않았습니다');
+      return false;
+    }
+
+    try {
+      print('🔄 강제 템플릿 데이터 동기화 시작');
+
+      // 1. 로컬 버전 조회
+      final localVersion = await LocalStorageService.getTemplatesVersion();
+      print('📦 로컬 템플릿 버전: $localVersion');
+
+      // 2. 서버 버전 조회
+      final serverVersionResult = await templateRepository!.getTemplatesVersion();
+      final serverVersion = serverVersionResult.fold(
+        (failure) {
+          print('⚠️ 서버 버전 조회 실패 - 로컬 데이터 사용');
+          return null;
+        },
+        (version) {
+          print('🌐 서버 템플릿 버전: $version');
+          return version;
+        },
+      );
+
+      if (serverVersion == null) {
+        print('⚠️ 서버 연결 실패 - 로컬 데이터로 진행');
+        return false;
+      }
+
+      // 3. 버전 비교
+      if (localVersion == serverVersion) {
+        print('✅ 템플릿 데이터 최신 버전 (동기화 불필요)');
+        return true;
+      }
+
+      // 4. 버전 다르면 동기화 (syncTemplates 호출)
+      print('🔽 템플릿 데이터 다운로드 필요 (v$localVersion → v$serverVersion)');
+      return await syncTemplates();
+    } catch (e) {
+      print('❌ 강제 템플릿 동기화 실패: $e');
+      return false;
+    }
   }
 }

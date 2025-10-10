@@ -169,7 +169,7 @@ SearchParties searchParties(SearchPartiesRef ref) =>
 class CounterNotifier extends _$CounterNotifier {
   @override
   CounterState build() {
-    return CounterState();
+    return const CounterState();
   }
 
   Future<void> _loadCounter() async {

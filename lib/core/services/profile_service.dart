@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfile {
-
   UserProfile({
     required this.id,
     required this.nickname,

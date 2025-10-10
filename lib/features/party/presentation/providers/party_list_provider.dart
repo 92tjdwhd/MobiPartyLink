@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart';
 import 'package:mobi_party_link/core/di/injection.dart';
 import 'package:mobi_party_link/features/notification/presentation/providers/party_notification_provider.dart';
-import 'package:mobi_party_link/core/data/mock_party_data.dart';
 
 // 내가 만든 파티 리스트 Provider
 final myPartiesProvider = FutureProvider<List<PartyEntity>>((ref) async {

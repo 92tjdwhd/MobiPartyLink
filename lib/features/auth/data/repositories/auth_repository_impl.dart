@@ -8,13 +8,13 @@ import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthRemoteDataSource remoteDataSource;
-  final NetworkInfo networkInfo;
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.networkInfo,
   });
+  final AuthRemoteDataSource remoteDataSource;
+  final NetworkInfo networkInfo;
 
   @override
   Future<Either<Failure, AuthUserEntity?>> getCurrentUser() async {
@@ -33,7 +33,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, AuthUserEntity>> signInAnonymously() async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
 
     try {

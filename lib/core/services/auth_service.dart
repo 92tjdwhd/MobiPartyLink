@@ -3,16 +3,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Supabase 익명 인증 및 userId 관리 서비스
 class AuthService {
-  static const String _userIdKey = 'supabase_user_id';
-
-  final SupabaseClient _supabaseClient;
-  final SharedPreferences _prefs;
 
   AuthService({
     required SupabaseClient supabaseClient,
     required SharedPreferences prefs,
   })  : _supabaseClient = supabaseClient,
         _prefs = prefs;
+  static const String _userIdKey = 'supabase_user_id';
+
+  final SupabaseClient _supabaseClient;
+  final SharedPreferences _prefs;
 
   /// userId 가져오기 (로컬 우선, 없으면 Supabase 세션에서)
   Future<String?> getUserId() async {

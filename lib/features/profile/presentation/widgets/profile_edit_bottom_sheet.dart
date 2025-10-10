@@ -5,12 +5,12 @@ import 'package:mobi_party_link/features/profile/presentation/providers/profile_
 import 'package:mobi_party_link/features/party/presentation/providers/job_provider.dart';
 
 class ProfileEditBottomSheet extends ConsumerStatefulWidget {
-  final UserProfile profile;
 
   const ProfileEditBottomSheet({
     super.key,
     required this.profile,
   });
+  final UserProfile profile;
 
   @override
   ConsumerState<ProfileEditBottomSheet> createState() =>

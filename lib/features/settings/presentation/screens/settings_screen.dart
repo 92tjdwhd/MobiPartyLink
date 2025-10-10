@@ -79,7 +79,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           BoxShadow(
             color: Theme.of(context).shadowColor,
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -92,7 +92,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Text(
             '설정',
             style: TextStyle(
@@ -117,7 +117,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           BoxShadow(
             color: Theme.of(context).shadowColor,
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -130,7 +130,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Text(
             '설정',
             style: TextStyle(
@@ -154,7 +154,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         children: [
           // 일반 설정 섹션
           _buildSectionHeader('일반'),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           _buildSettingsCard([
             _buildSettingsItem(
               icon: Icons.notifications_outlined,
@@ -171,11 +171,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ]),
 
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // 개발자 섹션
           _buildSectionHeader('개발자'),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           _buildSettingsCard([
             _buildSettingsItem(
               icon: Icons.cloud_sync,
@@ -186,11 +186,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // FCM 푸시 테스트는 나중에 추가
           ]),
 
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
 
           // 지원 섹션
           _buildSectionHeader('지원'),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           _buildSettingsCard([
             _buildSettingsItem(
               icon: Icons.help_outline,
@@ -208,7 +208,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ]),
 
-          SizedBox(height: 40),
+          const SizedBox(height: 40),
 
           // 앱 정보
           Center(
@@ -222,7 +222,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   '모바일 마비노기 파티 모집 앱',
                   style: TextStyle(
@@ -230,7 +230,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Version 1.0.0',
                   style: TextStyle(
@@ -263,7 +263,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildSettingsCard(List<Widget> children) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -310,7 +310,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: 20,
               ),
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -324,7 +324,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       letterSpacing: -0.3,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: TextStyle(
@@ -367,7 +367,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   // 프로필 설정 네비게이션
-  void _navigateToProfileSettings(BuildContext context) async {
+  Future<void> _navigateToProfileSettings(BuildContext context) async {
     final hasProfile = await ref.read(hasProfileProvider.future);
 
     if (hasProfile) {
@@ -438,19 +438,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 height: 1.5,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildContactOption(
               icon: Icons.email_outlined,
               title: '이메일',
               subtitle: 'deskmoment@gmail.com',
-              onTap: () => _launchEmail(),
+              onTap: _launchEmail,
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             _buildContactOption(
               icon: Icons.chat_outlined,
               title: '카카오톡',
               subtitle: '@모비링크',
-              onTap: () => _launchKakaoTalk(),
+              onTap: _launchKakaoTalk,
             ),
           ],
         ),
@@ -484,7 +484,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Row(
           children: [
             Icon(icon, color: Theme.of(context).primaryColor, size: 20),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -568,7 +568,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               value,

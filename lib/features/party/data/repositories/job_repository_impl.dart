@@ -8,13 +8,13 @@ import 'package:mobi_party_link/features/party/domain/entities/job_entity.dart';
 import 'package:mobi_party_link/features/party/domain/repositories/job_repository.dart';
 
 class JobRepositoryImpl implements JobRepository {
-  final JobRemoteDataSource remoteDataSource;
-  final NetworkInfo networkInfo;
 
   JobRepositoryImpl({
     required this.remoteDataSource,
     required this.networkInfo,
   });
+  final JobRemoteDataSource remoteDataSource;
+  final NetworkInfo networkInfo;
 
   @override
   Future<Either<Failure, List<JobCategoryEntity>>> getJobCategories() async {
@@ -28,7 +28,7 @@ class JobRepositoryImpl implements JobRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 
@@ -44,7 +44,7 @@ class JobRepositoryImpl implements JobRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 
@@ -61,7 +61,7 @@ class JobRepositoryImpl implements JobRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 
@@ -77,7 +77,7 @@ class JobRepositoryImpl implements JobRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 
@@ -100,7 +100,7 @@ class JobRepositoryImpl implements JobRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 
@@ -116,7 +116,7 @@ class JobRepositoryImpl implements JobRepository {
         return Left(ServerFailure(message: '예상치 못한 오류가 발생했습니다: $e'));
       }
     } else {
-      return Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
+      return const Left(NetworkFailure(message: '인터넷 연결을 확인해주세요'));
     }
   }
 }

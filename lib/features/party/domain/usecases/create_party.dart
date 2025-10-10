@@ -4,9 +4,9 @@ import 'package:mobi_party_link/features/party/domain/entities/party_entity.dart
 import 'package:mobi_party_link/features/party/domain/repositories/party_repository.dart';
 
 class CreateParty {
-  final PartyRepository repository;
 
   CreateParty(this.repository);
+  final PartyRepository repository;
 
   Future<Either<Failure, PartyEntity>> call({
     required String name,

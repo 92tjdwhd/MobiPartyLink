@@ -4,13 +4,7 @@ import 'package:mobi_party_link/core/utils/party_utils.dart';
 import 'package:mobi_party_link/core/utils/party_status_calculator.dart';
 
 class PartyCard extends StatelessWidget {
-  final PartyEntity party;
-  final VoidCallback? onTap;
-  final VoidCallback? onShare;
-  final VoidCallback? onEdit; // 수정하기 버튼 콜백
-  final bool isJoinedParty; // 참가한 파티인지 구분
-  final bool isMyParty; // 내가 만든 파티인지 구분
-  final EdgeInsetsGeometry? margin; // 마진 커스터마이징 옵션
+  // 마진 커스터마이징 옵션
 
   const PartyCard({
     super.key,
@@ -22,6 +16,13 @@ class PartyCard extends StatelessWidget {
     this.isMyParty = false, // 기본값은 false
     this.margin, // 마진 커스터마이징 옵션
   });
+  final PartyEntity party;
+  final VoidCallback? onTap;
+  final VoidCallback? onShare;
+  final VoidCallback? onEdit; // 수정하기 버튼 콜백
+  final bool isJoinedParty; // 참가한 파티인지 구분
+  final bool isMyParty; // 내가 만든 파티인지 구분
+  final EdgeInsetsGeometry? margin;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +87,10 @@ class PartyCard extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 // 컨텐츠, 카테고리, 난이도
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -104,7 +108,6 @@ class PartyCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
@@ -121,7 +124,6 @@ class PartyCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
@@ -138,7 +140,6 @@ class PartyCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Spacer(),
                     Text(
                       '${party.members.length}/${party.maxMembers}명',
                       style: TextStyle(
@@ -235,20 +236,20 @@ class PartyCard extends StatelessWidget {
                                 width: 1,
                               ),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.edit,
                                   size: 16,
-                                  color: const Color(0xFF007AFF),
+                                  color: Color(0xFF007AFF),
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4),
                                 Text(
                                   '수정하기',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: const Color(0xFF007AFF),
+                                    color: Color(0xFF007AFF),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -400,10 +401,12 @@ class PartyCard extends StatelessWidget {
 
     final jobCounts = _getJobCategoryCounts();
 
-    if (party.tankLimit > 0 && jobCounts['tank']! >= party.tankLimit)
+    if (party.tankLimit > 0 && jobCounts['tank']! >= party.tankLimit) {
       return true;
-    if (party.healerLimit > 0 && jobCounts['healer']! >= party.healerLimit)
+    }
+    if (party.healerLimit > 0 && jobCounts['healer']! >= party.healerLimit) {
       return true;
+    }
     if (party.dpsLimit > 0 && jobCounts['dps']! >= party.dpsLimit) return true;
 
     return false;

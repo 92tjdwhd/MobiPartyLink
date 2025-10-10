@@ -5,12 +5,12 @@ import 'package:mobi_party_link/features/profile/presentation/providers/profile_
 import 'package:mobi_party_link/features/party/presentation/providers/job_provider.dart';
 
 class ProfileSetupBottomSheet extends ConsumerStatefulWidget {
-  final VoidCallback? onProfileSaved;
 
   const ProfileSetupBottomSheet({
     super.key,
     this.onProfileSaved,
   });
+  final VoidCallback? onProfileSaved;
 
   @override
   ConsumerState<ProfileSetupBottomSheet> createState() =>
@@ -35,11 +35,11 @@ class _ProfileSetupBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
@@ -290,7 +290,7 @@ class _ProfileSetupBottomSheetState
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-            : Text(
+            : const Text(
                 '프로필 저장',
                 style: TextStyle(
                   fontSize: 16,
@@ -320,7 +320,7 @@ class _ProfileSetupBottomSheetState
     final String? selectedJob = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('직업 선택'),
+        title: const Text('직업 선택'),
         content: SizedBox(
           width: double.maxFinite,
           height: 400, // 고정 높이 설정

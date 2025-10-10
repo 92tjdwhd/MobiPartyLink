@@ -3,15 +3,15 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class FigmaIntegration {
-  static const String _baseUrl = 'https://api.figma.com/v1';
-  final String _accessToken;
-  final String _fileId;
 
   FigmaIntegration({
     required String accessToken,
     required String fileId,
   })  : _accessToken = accessToken,
         _fileId = fileId;
+  static const String _baseUrl = 'https://api.figma.com/v1';
+  final String _accessToken;
+  final String _fileId;
 
   /// Figma 파일 정보 가져오기
   Future<Map<String, dynamic>> getFileInfo() async {

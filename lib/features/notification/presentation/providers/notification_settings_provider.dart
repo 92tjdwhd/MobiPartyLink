@@ -10,13 +10,13 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
 
   @override
   Future<int> build() async {
-    final prefs = await ref.read(sharedPreferencesProvider);
+    final prefs = ref.read(sharedPreferencesProvider);
     return prefs.getInt(_notificationTimeKey) ?? 10; // 기본값 10분
   }
 
   /// 알림 시간 설정 (분 단위)
   Future<void> setNotificationTime(int minutes) async {
-    final prefs = await ref.read(sharedPreferencesProvider);
+    final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setInt(_notificationTimeKey, minutes);
     state = AsyncValue.data(minutes);
   }
@@ -27,14 +27,14 @@ class NotificationSettingsNotifier extends _$NotificationSettingsNotifier {
   /// 알림 시간 텍스트 변환
   static String getNotificationTimeText(int minutes) {
     if (minutes < 60) {
-      return '${minutes}분 전';
+      return '$minutes분 전';
     } else {
       final hours = minutes ~/ 60;
       final remainingMinutes = minutes % 60;
       if (remainingMinutes == 0) {
-        return '${hours}시간 전';
+        return '$hours시간 전';
       } else {
-        return '${hours}시간 ${remainingMinutes}분 전';
+        return '$hours시간 $remainingMinutes분 전';
       }
     }
   }

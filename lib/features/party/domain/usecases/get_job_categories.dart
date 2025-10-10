@@ -4,11 +4,11 @@ import 'package:mobi_party_link/features/party/domain/entities/job_category_enti
 import 'package:mobi_party_link/features/party/domain/repositories/job_repository.dart';
 
 class GetJobCategories {
-  final JobRepository jobRepository;
 
   GetJobCategories({required this.jobRepository});
+  final JobRepository jobRepository;
 
   Future<Either<Failure, List<JobCategoryEntity>>> call() async {
-    return await jobRepository.getJobCategories();
+    return jobRepository.getJobCategories();
   }
 }

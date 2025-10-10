@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../../core/error/failures.dart';
 import '../../domain/entities/counter_entity.dart';
 import '../../domain/usecases/decrement_counter.dart';
 import '../../domain/usecases/get_counter.dart';

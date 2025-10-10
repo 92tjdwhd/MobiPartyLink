@@ -39,6 +39,9 @@ dependencies:
   # UI
   cupertino_icons: ^1.0.2
   google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  path_provider: ^2.1.1
+  lottie: ^3.0.0
   
   # Utils
   equatable: ^2.0.5
@@ -79,6 +82,9 @@ dev_dependencies:
   retrofit_generator: ^8.0.6
   hive_generator: ^2.0.1
   
+  # App Icon Generation
+  flutter_launcher_icons: ^0.13.1
+  
   # Testing
   mockito: ^5.4.4
   riverpod_test: ^0.1.9
@@ -89,3 +95,12 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/animations/
+
+# App Icon Configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/campfire_icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true

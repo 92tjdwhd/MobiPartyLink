@@ -5,11 +5,11 @@ import '../entities/party_entity.dart';
 import '../repositories/party_repository.dart';
 
 class GetPartyById {
-  final PartyRepository repository;
 
   GetPartyById(this.repository);
+  final PartyRepository repository;
 
   Future<Either<Failure, PartyEntity?>> call(String partyId) async {
-    return await repository.getPartyById(partyId);
+    return repository.getPartyById(partyId);
   }
 }
